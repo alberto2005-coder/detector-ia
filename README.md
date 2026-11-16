@@ -12,7 +12,6 @@ Guías en español e inglés dentro de cada archivo:
 
 - [Uso y formatos](docs/USAGE.md): qué se extrae de cada formato y solución de problemas.
 - [Changelog](CHANGELOG.md): historial de cambios por versión.
-- [Contribuir](CONTRIBUTING.md): entorno, estructura y convención de commits.
 - [Índice de documentación](docs/README.md).
 
 ## Cómo funciona
