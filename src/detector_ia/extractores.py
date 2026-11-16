@@ -1,11 +1,13 @@
 import json
 import os
 import re
-from pypdf import PdfReader
+
 import docx
+from pypdf import PdfReader
+
 
 def _extraer_ipynb(ruta):
-    with open(ruta, "r", encoding="utf-8") as f:
+    with open(ruta, encoding="utf-8") as f:
         cuaderno = json.load(f)
     
     respuestas, codigo = [], []
@@ -19,10 +21,16 @@ def _extraer_ipynb(ruta):
                 parte_alumno = re.split(r"respuestas:\*?", contenido, flags=re.IGNORECASE)[-1]
                 respuestas.append(parte_alumno)
         elif celda.get("cell_type") == "code":
-            cod_limpio = "\n".join([l for l in lineas if not l.strip().startswith("#") and l.strip()])
+            cod_limpio = "\n".join(
+                linea for linea in lineas if not linea.strip().startswith("#") and linea.strip()
+            )
             if cod_limpio:
                 codigo.append(cod_limpio)
-            comentarios = [l.strip()[1:].strip() for l in lineas if l.strip().startswith("#")]
+            comentarios = [
+                linea.strip()[1:].strip()
+                for linea in lineas
+                if linea.strip().startswith("#")
+            ]
             if comentarios:
                 respuestas.append(" ".join(comentarios))
                 
@@ -39,7 +47,7 @@ def _extraer_docx(ruta):
     return "\n".join(parrafos).strip(), ""
 
 def _extraer_texto_plano(ruta):
-    with open(ruta, "r", encoding="utf-8", errors="ignore") as f:
+    with open(ruta, encoding="utf-8", errors="ignore") as f:
         return f.read().strip(), ""
 
 def procesar_archivo(ruta):

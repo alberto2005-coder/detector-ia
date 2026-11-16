@@ -1,12 +1,13 @@
 import argparse
 import glob
+import json
 import os
 import sys
 
 import pandas as pd
 
 from detector_ia.extractores import procesar_archivo
-from detector_ia.motores import AnalizadorIA
+from detector_ia.motores import MODELO_POR_DEFECTO, AnalizadorIA
 
 EXTENSIONES_VALIDAS = (".ipynb", ".pdf", ".docx", ".txt", ".md")
 CARPETA_POR_DEFECTO = "revision_ia"
@@ -20,6 +21,20 @@ UMBRAL_MEDIA_SOSPECHOSA = 35
 UMBRAL_SIMILITUD_COPIA = 88
 UMBRAL_SIMILITUD_MOSTRAR = 75
 
+VEREDICTOS_ALTO = ("ALTO RIESGO IA", "REVISAR COPIA ENTRE ALUMNOS")
+
+COLUMNAS = [
+    "Archivo",
+    "Formato",
+    "IA_Media (%)",
+    "IA_Pico_Max (%)",
+    "Similitud_Companero (%)",
+    "Coincide_Con",
+    "Veredicto",
+    "Fragmento_Sospechoso",
+    "Error",
+]
+
 
 def _parsear_argumentos(argv=None):
     parser = argparse.ArgumentParser(
@@ -28,9 +43,7 @@ def _parsear_argumentos(argv=None):
             "Detecta indicios de texto generado por IA y posibles copias entre "
             "entregas de alumnos, y genera un reporte CSV."
         ),
-        epilog=(
-            "Ejemplo: detector-ia --carpeta revision_ia --salida reporte.csv"
-        ),
+        epilog="Ejemplo: detector-ia --carpeta revision_ia --salida reporte.csv",
     )
     parser.add_argument(
         "-c",
@@ -50,6 +63,25 @@ def _parsear_argumentos(argv=None):
         default=None,
         help="Modelo de Hugging Face a usar (por defecto, el RoBERTa de detección de IA).",
     )
+    parser.add_argument(
+        "--sin-modelo",
+        action="store_true",
+        help="Analiza solo con las señales estructurales, sin descargar el modelo neuronal.",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Escribe el resultado en JSON por la salida estándar y el progreso por la de errores.",
+    )
+    parser.add_argument(
+        "--fail-on",
+        choices=("ninguno", "error", "alto", "sospechoso"),
+        default="ninguno",
+        help=(
+            "Devuelve código de salida 1 si el reporte alcanza ese nivel "
+            "(por defecto: ninguno, siempre 0)."
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -67,10 +99,38 @@ def _sin_extension(nombre):
     return os.path.splitext(os.path.basename(nombre))[0].strip().lower()
 
 
+def _fila(datos):
+    fila = {columna: "" for columna in COLUMNAS}
+    fila.update({"IA_Media (%)": 0, "IA_Pico_Max (%)": 0, "Similitud_Companero (%)": 0,
+                 "Coincide_Con": "Ninguno"})
+    fila.update(datos)
+    return fila
+
+
+def _imprimir(mensaje):
+    print(mensaje, file=sys.stderr, flush=True)
+
+
+def _codigo_salida(resultados, nivel):
+    """Traduce el nivel pedido en --fail-on al código de salida del proceso."""
+    if nivel == "ninguno":
+        return 0
+    veredictos = [fila["Veredicto"] for fila in resultados]
+    if "Error" in veredictos:
+        return 1
+    if nivel == "error":
+        return 0
+    if any(v in VEREDICTOS_ALTO for v in veredictos):
+        return 1
+    if nivel == "alto":
+        return 0
+    return 1 if "Sospechoso (Revisar)" in veredictos else 0
+
+
 def main(argv=None):
-    # En consolas de Windows (cp1252) los acentos y el ✔ del progreso rompen el print
-    if hasattr(sys.stdout, "reconfigure"):
-        sys.stdout.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)
+    for flujo in (sys.stdout, sys.stderr):
+        if hasattr(flujo, "reconfigure"):
+            flujo.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)
 
     args = _parsear_argumentos(argv)
     carpeta = args.carpeta
@@ -82,81 +142,101 @@ def main(argv=None):
     )
 
     if not archivos:
-        print(f"No se encontraron archivos compatibles en '{carpeta}/'.")
-        return
+        _imprimir(f"No se encontraron archivos compatibles en '{carpeta}/'.")
+        return 0
 
-    analizador = AnalizadorIA() if args.modelo is None else AnalizadorIA(modelo=args.modelo)
-    print(f"Analizando {len(archivos)} entregas (Jupyter, PDF, Word, Markdown, TXT)...")
-
-    entregas = []
-    for ruta in archivos:
-        texto, codigo = procesar_archivo(ruta)
-        entregas.append(
-            {
-                "nombre": os.path.basename(ruta),
-                "tipo": os.path.splitext(ruta)[1].upper(),
-                "texto": texto,
-                "codigo": codigo,
-            }
-        )
+    analizador = AnalizadorIA(
+        modelo=args.modelo or MODELO_POR_DEFECTO,
+        usar_modelo=not args.sin_modelo,
+    )
+    _imprimir(f"Analizando {len(archivos)} entregas (Jupyter, PDF, Word, Markdown, TXT)...")
 
     resultados = []
-    for i, item in enumerate(entregas):
-        if len(item["texto"]) < TEXTO_MINIMO:
+    validas = []
+
+    for ruta in archivos:
+        nombre = os.path.basename(ruta)
+        tipo = os.path.splitext(ruta)[1].upper()
+        try:
+            texto, codigo = procesar_archivo(ruta)
+        except Exception as error:  # un archivo roto no debe tumbar el lote
             resultados.append(
-                {
-                    "Archivo": item["nombre"],
-                    "Formato": item["tipo"],
-                    "IA_Media (%)": 0,
-                    "IA_Pico_Max (%)": 0,
-                    "Similitud_Companero (%)": 0,
-                    "Coincide_Con": "Ninguno",
-                    "Veredicto": "Poco texto",
-                    "Fragmento_Sospechoso": "",
-                }
+                _fila(
+                    {
+                        "Archivo": nombre,
+                        "Formato": tipo,
+                        "Veredicto": "Error",
+                        "Error": f"{type(error).__name__}: {error}",
+                    }
+                )
+            )
+            _imprimir(f"✖ [{tipo}] {nombre} -> no se pudo leer: {error}")
+            continue
+
+        if len(texto) < TEXTO_MINIMO:
+            resultados.append(
+                _fila({"Archivo": nombre, "Formato": tipo, "Veredicto": "Poco texto"})
             )
             continue
 
-        media_ia, max_ia, fragmento = analizador.evaluar_texto(item["texto"])
+        validas.append({"nombre": nombre, "tipo": tipo, "texto": texto, "codigo": codigo})
 
-        # Compara código si es .ipynb, o texto redactado si es .pdf/.docx/.txt/.md
-        max_sim = 0.0
-        companero = "Ninguno"
-        base_comp = item["codigo"] if item["codigo"] else item["texto"]
-        nombre_base = _sin_extension(item["nombre"])
+    for i, item in enumerate(validas):
+        try:
+            media_ia, max_ia, fragmento = analizador.evaluar_texto(item["texto"])
 
-        for j, otro in enumerate(entregas):
-            if i == j:
-                continue
-            # El mismo trabajo entregado en dos formatos (p. ej. PDF y TXT) no es copia
-            if _sin_extension(otro["nombre"]) == nombre_base:
-                continue
-            otro_comp = otro["codigo"] if otro["codigo"] else otro["texto"]
-            sim = analizador.similitud_coseno(base_comp, otro_comp)
-            if sim > max_sim:
-                max_sim = sim
-                companero = otro["nombre"]
+            # Compara código si es .ipynb, o texto redactado si es .pdf/.docx/.txt/.md
+            max_sim = 0.0
+            companero = "Ninguno"
+            base_comp = item["codigo"] if item["codigo"] else item["texto"]
+            nombre_base = _sin_extension(item["nombre"])
 
-        veredicto = _juzgar(media_ia, max_ia, max_sim)
+            for j, otro in enumerate(validas):
+                if i == j:
+                    continue
+                # El mismo trabajo entregado en dos formatos (p. ej. PDF y TXT) no es copia
+                if _sin_extension(otro["nombre"]) == nombre_base:
+                    continue
+                otro_comp = otro["codigo"] if otro["codigo"] else otro["texto"]
+                sim = analizador.similitud_coseno(base_comp, otro_comp)
+                if sim > max_sim:
+                    max_sim = sim
+                    companero = otro["nombre"]
 
-        resultados.append(
-            {
-                "Archivo": item["nombre"],
-                "Formato": item["tipo"],
-                "IA_Media (%)": media_ia,
-                "IA_Pico_Max (%)": max_ia,
-                "Similitud_Companero (%)": max_sim,
-                "Coincide_Con": companero if max_sim > UMBRAL_SIMILITUD_MOSTRAR else "Ninguno",
-                "Veredicto": veredicto,
-                "Fragmento_Sospechoso": fragmento,
-            }
-        )
-        print(
-            f"✔ [{item['tipo']}] {item['nombre']} -> IA Pico: {max_ia}% | "
-            f"Similitud: {max_sim}% ({veredicto})"
-        )
+            veredicto = _juzgar(media_ia, max_ia, max_sim)
+            coincidencia = companero if max_sim > UMBRAL_SIMILITUD_MOSTRAR else "Ninguno"
+            resultados.append(
+                _fila(
+                    {
+                        "Archivo": item["nombre"],
+                        "Formato": item["tipo"],
+                        "IA_Media (%)": media_ia,
+                        "IA_Pico_Max (%)": max_ia,
+                        "Similitud_Companero (%)": max_sim,
+                        "Coincide_Con": coincidencia,
+                        "Veredicto": veredicto,
+                        "Fragmento_Sospechoso": fragmento,
+                    }
+                )
+            )
+            _imprimir(
+                f"✔ [{item['tipo']}] {item['nombre']} -> IA Pico: {max_ia}% | "
+                f"Similitud: {max_sim}% ({veredicto})"
+            )
+        except Exception as error:  # fallo al puntuar: se anota y se sigue
+            resultados.append(
+                _fila(
+                    {
+                        "Archivo": item["nombre"],
+                        "Formato": item["tipo"],
+                        "Veredicto": "Error",
+                        "Error": f"{type(error).__name__}: {error}",
+                    }
+                )
+            )
+            _imprimir(f"✖ [{item['tipo']}] {item['nombre']} -> no se pudo puntuar: {error}")
 
-    df = pd.DataFrame(resultados)
+    df = pd.DataFrame(resultados, columns=COLUMNAS)
     df = df.sort_values(
         by=["IA_Pico_Max (%)", "Similitud_Companero (%)"], ascending=False
     )
@@ -164,8 +244,26 @@ def main(argv=None):
     if carpeta_salida:
         os.makedirs(carpeta_salida, exist_ok=True)
     df.to_csv(args.salida, index=False, sep=";", encoding="utf-8-sig")
-    print(f"\n¡Listo! Reporte guardado en '{args.salida}'.")
+
+    errores = sum(1 for fila in resultados if fila["Veredicto"] == "Error")
+    resumen = {
+        "carpeta": carpeta,
+        "reporte": args.salida,
+        "modelo": None if args.sin_modelo else (args.modelo or MODELO_POR_DEFECTO),
+        "total": len(resultados),
+        "errores": errores,
+    }
+
+    if args.json:
+        salida_json = {"resumen": resumen, "resultados": resultados}
+        print(json.dumps(salida_json, ensure_ascii=False, indent=2))
+    else:
+        _imprimir(f"\n¡Listo! Reporte guardado en '{args.salida}'.")
+    if errores:
+        _imprimir(f"Aviso: {errores} archivo(s) no se pudieron analizar (ver columna Error).")
+
+    return _codigo_salida(resultados, args.fail_on)
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
