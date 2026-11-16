@@ -18,12 +18,21 @@ Si tocas dependencias, usa `uv add` o `uv remove` y sube también el `uv.lock` a
 ### Estructura
 
 ```text
-src/detector_ia/
-├── main.py          # CLI, umbrales, veredictos y generación del CSV
-├── extractores.py   # Lectura de cada formato
-└── motores.py       # Modelo neuronal, huella estructural y similitud
-docs/                # Índice y detalles de uso (bilingües)
-revision_ia/         # Entregas de entrada (ignorada por git)
+detector-ia/
+├── src/detector_ia/
+│   ├── main.py          # CLI, umbrales, veredictos y generación del CSV
+│   ├── extractores.py   # Lectura de cada formato
+│   └── motores.py       # Modelo neuronal, huella estructural y similitud
+├── docs/                # Índice y detalles de uso (bilingües)
+├── revision_ia/         # Entregas de entrada (ignorada por git)
+├── README.md            # Guía completa, en español e inglés
+├── CONTRIBUTING.md      # Esta guía
+├── SECURITY.md          # Política de seguridad
+├── CHANGELOG.md         # Historial de cambios por versión
+├── LICENSE              # Licencia MIT
+├── pyproject.toml       # Dependencias y entry point detector-ia
+├── uv.lock              # Versiones exactas de las dependencias
+└── .gitignore           # Excluye .venv, cache_modelo y entregas
 ```
 
 ### Ideas para contribuir
@@ -71,12 +80,21 @@ If you touch dependencies, use `uv add` or `uv remove` and commit the updated `u
 ### Layout
 
 ```text
-src/detector_ia/
-├── main.py          # CLI, thresholds, verdicts and CSV output
-├── extractores.py   # One reader per format
-└── motores.py       # Neural model, structural fingerprint and similarity
-docs/                # Index and usage details (bilingual)
-revision_ia/         # Input submissions (git-ignored)
+detector-ia/
+├── src/detector_ia/
+│   ├── main.py          # CLI, thresholds, verdicts and CSV output
+│   ├── extractores.py   # One reader per format
+│   └── motores.py       # Neural model, structural fingerprint and similarity
+├── docs/                # Index and usage details (bilingual)
+├── revision_ia/         # Input submissions (git-ignored)
+├── README.md            # Full guide, in Spanish and English
+├── CONTRIBUTING.md      # This guide
+├── SECURITY.md          # Security policy
+├── CHANGELOG.md         # Change history per version
+├── LICENSE              # MIT license
+├── pyproject.toml       # Dependencies and detector-ia entry point
+├── uv.lock              # Exact dependency versions
+└── .gitignore           # Excludes .venv, cache_modelo and submissions
 ```
 
 ### Good places to help

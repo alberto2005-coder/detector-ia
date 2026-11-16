@@ -93,12 +93,21 @@ Umbrales actuales (en `src/detector_ia/main.py`): pico ≥ 58 % o media ≥ 45 %
 ### Estructura
 
 ```
-src/detector_ia/
-├── main.py          # CLI, umbrales y generación del reporte
-├── extractores.py   # Lectura de .ipynb, .pdf, .docx, .txt y .md
-└── motores.py       # Modelo neuronal, huella estructural y similitud
-docs/                # Índice y detalles de uso (bilingües)
-revision_ia/         # Entregas de entrada (ignoradas por git)
+detector-ia/
+├── src/detector_ia/
+│   ├── main.py          # CLI, umbrales y generación del reporte
+│   ├── extractores.py   # Lectura de .ipynb, .pdf, .docx, .txt y .md
+│   └── motores.py       # Modelo neuronal, huella estructural y similitud
+├── docs/                # Índice y detalles de uso (bilingües)
+├── revision_ia/         # Entregas de entrada (ignoradas por git)
+├── README.md            # Guía completa, en español e inglés
+├── CONTRIBUTING.md      # Cómo contribuir
+├── SECURITY.md          # Política de seguridad
+├── CHANGELOG.md         # Historial de cambios por versión
+├── LICENSE              # Licencia MIT
+├── pyproject.toml       # Metadatos, dependencias y entry point
+├── uv.lock              # Versiones exactas de las dependencias
+└── .gitignore           # Excluye .venv, cache_modelo y entregas
 ```
 
 ### Privacidad
@@ -200,12 +209,21 @@ Current thresholds (in `src/detector_ia/main.py`): peak ≥ 58 % or mean ≥ 45 
 ### Layout
 
 ```
-src/detector_ia/
-├── main.py          # CLI, thresholds and report generation
-├── extractores.py   # Readers for .ipynb, .pdf, .docx, .txt and .md
-└── motores.py       # Neural model, structural fingerprint and similarity
-docs/                # Index and usage details (bilingual)
-revision_ia/         # Input submissions (git-ignored)
+detector-ia/
+├── src/detector_ia/
+│   ├── main.py          # CLI, thresholds and report generation
+│   ├── extractores.py   # Readers for .ipynb, .pdf, .docx, .txt and .md
+│   └── motores.py       # Neural model, structural fingerprint and similarity
+├── docs/                # Index and usage details (bilingual)
+├── revision_ia/         # Input submissions (git-ignored)
+├── README.md            # Full guide, in Spanish and English
+├── CONTRIBUTING.md      # How to contribute
+├── SECURITY.md          # Security policy
+├── CHANGELOG.md         # Change history per version
+├── LICENSE              # MIT license
+├── pyproject.toml       # Metadata, dependencies and entry point
+├── uv.lock              # Exact dependency versions
+└── .gitignore           # Excludes .venv, cache_modelo and submissions
 ```
 
 ### Privacy
