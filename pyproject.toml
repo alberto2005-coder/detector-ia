@@ -18,7 +18,7 @@ license = "MIT"
 license-files = ["LICENSE"]
 readme = "README.md"
 authors = [
-    { name = "Alberto Ortiz", email = "albertoortixsanchez@gmail.com" }
+    { name = "Alberto Ortiz Sánchez", email = "albertoortixsanchez@gmail.com" }
 ]
 requires-python = ">=3.13"
 classifiers = [

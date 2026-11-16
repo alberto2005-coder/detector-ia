@@ -66,6 +66,7 @@ Con opciones:
 
 ```bash
 uv run detector-ia --carpeta entregas --salida reportes/marzo.csv
+uv run detector-ia -c ejemplos/misma_entrega.md --sin-modelo   # un solo archivo
 uv run detector-ia --modelo fakespot-ai/roberta-base-ai-text-detection-v1
 ```
 
@@ -79,7 +80,7 @@ python -m detector_ia --carpeta revision_ia
 
 | Opción | Por defecto | Descripción |
 | --- | --- | --- |
-| `-c`, `--carpeta` | `revision_ia` | Carpeta con las entregas a analizar |
+| `-c`, `--carpeta`, `--ruta` | `revision_ia` | Carpeta con las entregas o ruta de un archivo concreto |
 | `-s`, `--salida` | `reporte_profesional_ia.csv` | Ruta del reporte generado |
 | `-m`, `--modelo` | RoBERTa de detección de IA | Modelo de Hugging Face a usar |
 | `--sin-modelo` | desactivado | Analiza solo con las señales estructurales, sin descargar el modelo |
@@ -200,6 +201,7 @@ With options:
 
 ```bash
 uv run detector-ia --carpeta entregas --salida reportes/marzo.csv
+uv run detector-ia -c ejemplos/misma_entrega.md --sin-modelo   # a single file
 uv run detector-ia --modelo fakespot-ai/roberta-base-ai-text-detection-v1
 ```
 
@@ -213,7 +215,7 @@ python -m detector_ia --carpeta revision_ia
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `-c`, `--carpeta` | `revision_ia` | Folder with the submissions to analyse |
+| `-c`, `--carpeta`, `--ruta` | `revision_ia` | Folder with the submissions, or the path of a single file |
 | `-s`, `--salida` | `reporte_profesional_ia.csv` | Path of the generated report |
 | `-m`, `--modelo` | AI-detection RoBERTa | Hugging Face model to use |
 | `--sin-modelo` | off | Structural signals only, without downloading the model |

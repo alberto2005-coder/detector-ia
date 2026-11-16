@@ -52,13 +52,25 @@ def _parsear_argumentos(argv=None):
             "Detecta indicios de texto generado por IA y posibles copias entre "
             "entregas de alumnos, y genera un reporte CSV."
         ),
-        epilog="Ejemplo: detector-ia --carpeta revision_ia --salida reporte.csv",
+        epilog=(
+            "Ejemplos:\n"
+            "  detector-ia -c revision_ia --salida reporte.csv\n"
+            "  detector-ia -c revision_ia/entrega.pdf --sin-modelo\n\n"
+            "Autor: Alberto Ortiz Sánchez · Licencia MIT\n"
+            "https://github.com/alberto2005-coder/detector-ia"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "-c",
         "--carpeta",
+        "--ruta",
+        dest="carpeta",
         default=CARPETA_POR_DEFECTO,
-        help=f"Carpeta con las entregas a analizar (por defecto: {CARPETA_POR_DEFECTO}/).",
+        help=(
+            "Carpeta con las entregas o ruta de un archivo concreto "
+            f"(por defecto: {CARPETA_POR_DEFECTO}/)."
+        ),
     )
     parser.add_argument(
         "-s",
@@ -115,6 +127,15 @@ def _sin_extension(nombre):
     return os.path.splitext(os.path.basename(nombre))[0].strip().lower()
 
 
+def _listar_archivos(ruta):
+    """Acepta una carpeta con entregas o la ruta de un único archivo."""
+    if os.path.isfile(ruta):
+        candidatos = [ruta]
+    else:
+        candidatos = sorted(glob.glob(os.path.join(ruta, "*")))
+    return [c for c in candidatos if c.lower().endswith(EXTENSIONES_VALIDAS)]
+
+
 def _fila(datos):
     fila = {columna: "" for columna in COLUMNAS}
     fila.update({"IA_Media (%)": 0, "IA_Pico_Max (%)": 0, "Similitud_Companero (%)": 0,
@@ -149,23 +170,20 @@ def main(argv=None):
             flujo.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)
 
     args = _parsear_argumentos(argv)
-    carpeta = args.carpeta
+    ruta = args.carpeta
 
-    archivos = sorted(
-        f
-        for f in glob.glob(os.path.join(carpeta, "*"))
-        if f.lower().endswith(EXTENSIONES_VALIDAS)
-    )
+    archivos = _listar_archivos(ruta)
 
     if not archivos:
-        _imprimir(f"No se encontraron archivos compatibles en '{carpeta}/'.")
+        _imprimir(f"No se encontraron archivos compatibles en '{ruta}'.")
         return 0
 
     analizador = AnalizadorIA(
         modelo=args.modelo or MODELO_POR_DEFECTO,
         usar_modelo=not args.sin_modelo,
     )
-    _imprimir(f"Analizando {len(archivos)} entregas (Jupyter, PDF, Word, Markdown, TXT)...")
+    cuantas = "entrega" if len(archivos) == 1 else "entregas"
+    _imprimir(f"Analizando {len(archivos)} {cuantas} (Jupyter, PDF, Word, Markdown, TXT)...")
 
     resultados = []
     validas = []
@@ -263,7 +281,7 @@ def main(argv=None):
 
     errores = sum(1 for fila in resultados if fila["Veredicto"] == "Error")
     resumen = {
-        "carpeta": carpeta,
+        "ruta": ruta,
         "reporte": args.salida,
         "modelo": None if args.sin_modelo else (args.modelo or MODELO_POR_DEFECTO),
         "total": len(resultados),

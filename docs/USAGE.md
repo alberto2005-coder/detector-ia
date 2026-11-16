@@ -11,7 +11,7 @@ Command options, report columns and thresholds live in the [full guide](../READM
 
 ### Preparar las entregas
 
-Crea una carpeta (por defecto `revision_ia/`) y copia dentro los archivos a analizar.
+Crea una carpeta (por defecto `revision_ia/`) y copia dentro los archivos a analizar. Si solo quieres revisar uno, pasa su ruta directamente: `-c revision_ia/entrega.pdf`.
 
 | Extensión | Qué se extrae |
 | --- | --- |
@@ -54,7 +54,7 @@ Analizando 4 entregas (Jupyter, PDF, Word, Markdown, TXT)...
 
 ### Preparing the submissions
 
-Create a folder (default `revision_ia/`) and copy the files to analyse into it.
+Create a folder (default `revision_ia/`) and copy the files to analyse into it. If you only want one, pass its path directly: `-c revision_ia/entrega.pdf`.
 
 | Extension | What is extracted |
 | --- | --- |

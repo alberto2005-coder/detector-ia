@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Se
 
 ## Español
 
+### [Sin publicar]
+
+#### Añadido
+
+- `-c` acepta también la ruta de un único archivo (`--ruta`), no solo una carpeta.
+- Autor, licencia y repositorio en la ayuda de `-h`, y `__author__` en el paquete con el nombre completo.
+
 ### [0.2.0] — 2026-11-16
 
 #### Añadido
@@ -65,6 +72,13 @@ Primera versión utilizable del detector.
 ---
 
 ## English
+
+### [Unreleased]
+
+#### Added
+
+- `-c` also accepts the path of a single file (`--ruta`), not just a folder.
+- Author, licence and repository in the `-h` help, and `__author__` in the package with the full name.
 
 ### [0.2.0] — 2026-11-16
 

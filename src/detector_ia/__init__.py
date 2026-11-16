@@ -9,4 +9,7 @@ try:
 except PackageNotFoundError:  # ejecución desde el código sin instalar
     __version__ = "0.0.0"
 
-__all__ = ["main", "__version__"]
+__author__ = "Alberto Ortiz Sánchez"
+__license__ = "MIT"
+
+__all__ = ["main", "__author__", "__license__", "__version__"]

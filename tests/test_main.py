@@ -80,6 +80,45 @@ def test_version_en_la_cli(capsys):
     assert __version__ in capsys.readouterr().out
 
 
+def test_acepta_la_ruta_de_un_solo_archivo(tmp_path):
+    _escribir(tmp_path, "uno.md", TEXTO_IA)
+    _escribir(tmp_path, "dos.txt", TEXTO_HUMANO)
+    salida = tmp_path / "reporte.csv"
+
+    codigo = main(["-c", str(tmp_path / "uno.md"), "-s", str(salida), "--sin-modelo"])
+
+    assert codigo == 0
+    assert [fila["Archivo"] for fila in _leer(salida)] == ["uno.md"]
+
+
+def test_alias_ruta_hace_lo_mismo_que_carpeta(tmp_path):
+    _escribir(tmp_path, "uno.md", TEXTO_IA)
+    salida = tmp_path / "reporte.csv"
+
+    codigo = main(["--ruta", str(tmp_path / "uno.md"), "-s", str(salida), "--sin-modelo"])
+
+    assert codigo == 0
+    assert len(_leer(salida)) == 1
+
+
+def test_archivo_no_soportado_no_genera_reporte(tmp_path):
+    (tmp_path / "datos.xyz").write_text("contenido", encoding="utf-8")
+    salida = tmp_path / "reporte.csv"
+
+    assert main(["-c", str(tmp_path / "datos.xyz"), "-s", str(salida)]) == 0
+    assert not salida.exists()
+
+
+def test_help_incluye_version_ruta_y_autor(capsys):
+    with pytest.raises(SystemExit) as salida:
+        main(["-h"])
+    texto = capsys.readouterr().out
+    assert salida.value.code == 0
+    assert "--version" in texto
+    assert "--ruta" in texto
+    assert "Alberto Ortiz Sánchez" in texto
+
+
 def test_sin_archivos_no_genera_reporte(tmp_path):
     salida = tmp_path / "reporte.csv"
     assert main(["-c", str(tmp_path), "-s", str(salida), "--sin-modelo"]) == 0
