@@ -37,6 +37,42 @@ COLUMNAS = [
     "Error",
 ]
 
+# Los valores de --fail-on se aceptan en español y en inglés
+NIVELES_FAIL_ON = {
+    "ninguno": "ninguno",
+    "none": "ninguno",
+    "error": "error",
+    "alto": "alto",
+    "high": "alto",
+    "sospechoso": "sospechoso",
+    "suspicious": "sospechoso",
+}
+
+MENSAJES = {
+    "es": {
+        "analizando": "Analizando {n} {unidad} (Jupyter, PDF, Word, Markdown, TXT)...",
+        "entrega": "entrega",
+        "entregas": "entregas",
+        "sin_archivos": "No se encontraron archivos compatibles en '{ruta}'.",
+        "listo": "\n¡Listo! Reporte guardado en '{salida}'.",
+        "aviso_errores": "Aviso: {n} archivo(s) no se pudieron analizar (ver columna Error).",
+        "error_lectura": "✖ [{tipo}] {nombre} -> no se pudo leer: {error}",
+        "error_puntuacion": "✖ [{tipo}] {nombre} -> no se pudo puntuar: {error}",
+        "resultado": "✔ [{tipo}] {nombre} -> IA Pico: {pico}% | Similitud: {sim}% ({veredicto})",
+    },
+    "en": {
+        "analizando": "Analysing {n} {unidad} (Jupyter, PDF, Word, Markdown, TXT)...",
+        "entrega": "submission",
+        "entregas": "submissions",
+        "sin_archivos": "No supported files found in '{ruta}'.",
+        "listo": "\nDone! Report saved to '{salida}'.",
+        "aviso_errores": "Warning: {n} file(s) could not be analysed (see the Error column).",
+        "error_lectura": "✖ [{tipo}] {nombre} -> could not read it: {error}",
+        "error_puntuacion": "✖ [{tipo}] {nombre} -> could not score it: {error}",
+        "resultado": "✔ [{tipo}] {nombre} -> AI Peak: {pico}% | Similarity: {sim}% ({veredicto})",
+    },
+}
+
 
 def _version():
     try:
@@ -50,13 +86,16 @@ def _parsear_argumentos(argv=None):
         prog="detector-ia",
         description=(
             "Detecta indicios de texto generado por IA y posibles copias entre "
-            "entregas de alumnos, y genera un reporte CSV."
+            "entregas de alumnos, y genera un reporte CSV.\n"
+            "Detects AI-generated text and possible copying between student "
+            "submissions, and produces a CSV report."
         ),
         epilog=(
-            "Ejemplos:\n"
+            "Ejemplos / Examples:\n"
             "  detector-ia -c revision_ia --salida reporte.csv\n"
-            "  detector-ia -c revision_ia/entrega.pdf --sin-modelo\n\n"
-            "Autor: Alberto Ortiz Sánchez · Licencia MIT\n"
+            "  detector-ia -c revision_ia/entrega.pdf --sin-modelo\n"
+            "  detector-ia --folder entregas --output reporte.csv --lang en\n\n"
+            "Autor / Author: Alberto Ortiz Sánchez · Licencia / License: MIT\n"
             "https://github.com/alberto2005-coder/detector-ia"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -65,50 +104,77 @@ def _parsear_argumentos(argv=None):
         "-c",
         "--carpeta",
         "--ruta",
+        "--folder",
+        "--path",
         dest="carpeta",
         default=CARPETA_POR_DEFECTO,
         help=(
-            "Carpeta con las entregas o ruta de un archivo concreto "
-            f"(por defecto: {CARPETA_POR_DEFECTO}/)."
+            "Carpeta con las entregas o ruta de un archivo "
+            f"(por defecto/default: {CARPETA_POR_DEFECTO}/). "
+            "Folder of submissions or path to a single file."
         ),
     )
     parser.add_argument(
         "-s",
         "--salida",
+        "--output",
+        dest="salida",
         default=SALIDA_POR_DEFECTO,
-        help=f"Ruta del reporte CSV generado (por defecto: {SALIDA_POR_DEFECTO}).",
+        help=(
+            "Ruta del reporte CSV · CSV report path "
+            f"(por defecto/default: {SALIDA_POR_DEFECTO})."
+        ),
     )
     parser.add_argument(
         "-m",
         "--modelo",
+        "--model",
+        dest="modelo",
         default=None,
-        help="Modelo de Hugging Face a usar (por defecto, el RoBERTa de detección de IA).",
+        help="Modelo de Hugging Face · Hugging Face model (default: AI-detection RoBERTa).",
     )
     parser.add_argument(
         "-V",
         "--version",
         action="version",
         version=f"%(prog)s {_version()}",
-        help="Muestra la versión y sale.",
+        help="Muestra la versión y sale · Print the version and exit.",
     )
     parser.add_argument(
         "--sin-modelo",
+        "--no-model",
+        dest="sin_modelo",
         action="store_true",
-        help="Analiza solo con las señales estructurales, sin descargar el modelo neuronal.",
+        help=(
+            "Analiza solo con las señales estructurales, sin descargar el modelo · "
+            "Structural signals only, no model download."
+        ),
     )
     parser.add_argument(
         "--json",
         action="store_true",
-        help="Escribe el resultado en JSON por la salida estándar y el progreso por la de errores.",
+        help=(
+            "Resultado en JSON por la salida estándar y progreso por la de errores · "
+            "JSON on stdout and progress on stderr."
+        ),
     )
     parser.add_argument(
         "--fail-on",
-        choices=("ninguno", "error", "alto", "sospechoso"),
+        dest="fail_on",
+        choices=tuple(NIVELES_FAIL_ON),
         default="ninguno",
         help=(
-            "Devuelve código de salida 1 si el reporte alcanza ese nivel "
-            "(por defecto: ninguno, siempre 0)."
+            "Código de salida 1 al alcanzar ese nivel: ninguno/none, error, alto/high, "
+            "sospechoso/suspicious (por defecto/default: ninguno)."
         ),
+    )
+    parser.add_argument(
+        "--lang",
+        "--idioma",
+        dest="idioma",
+        choices=("es", "en"),
+        default="es",
+        help="Idioma de los mensajes de consola · Console message language (es/en).",
     )
     return parser.parse_args(argv)
 
@@ -170,29 +236,32 @@ def main(argv=None):
             flujo.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)
 
     args = _parsear_argumentos(argv)
+    texto = MENSAJES[args.idioma]
     ruta = args.carpeta
+    nivel = NIVELES_FAIL_ON[args.fail_on]
 
     archivos = _listar_archivos(ruta)
 
     if not archivos:
-        _imprimir(f"No se encontraron archivos compatibles en '{ruta}'.")
+        _imprimir(texto["sin_archivos"].format(ruta=ruta))
         return 0
 
     analizador = AnalizadorIA(
         modelo=args.modelo or MODELO_POR_DEFECTO,
         usar_modelo=not args.sin_modelo,
+        idioma=args.idioma,
     )
-    cuantas = "entrega" if len(archivos) == 1 else "entregas"
-    _imprimir(f"Analizando {len(archivos)} {cuantas} (Jupyter, PDF, Word, Markdown, TXT)...")
+    unidad = texto["entrega"] if len(archivos) == 1 else texto["entregas"]
+    _imprimir(texto["analizando"].format(n=len(archivos), unidad=unidad))
 
     resultados = []
     validas = []
 
-    for ruta in archivos:
-        nombre = os.path.basename(ruta)
-        tipo = os.path.splitext(ruta)[1].upper()
+    for ruta_archivo in archivos:
+        nombre = os.path.basename(ruta_archivo)
+        tipo = os.path.splitext(ruta_archivo)[1].upper()
         try:
-            texto, codigo = procesar_archivo(ruta)
+            contenido, codigo = procesar_archivo(ruta_archivo)
         except Exception as error:  # un archivo roto no debe tumbar el lote
             resultados.append(
                 _fila(
@@ -204,16 +273,18 @@ def main(argv=None):
                     }
                 )
             )
-            _imprimir(f"✖ [{tipo}] {nombre} -> no se pudo leer: {error}")
+            _imprimir(texto["error_lectura"].format(tipo=tipo, nombre=nombre, error=error))
             continue
 
-        if len(texto) < TEXTO_MINIMO:
+        if len(contenido) < TEXTO_MINIMO:
             resultados.append(
                 _fila({"Archivo": nombre, "Formato": tipo, "Veredicto": "Poco texto"})
             )
             continue
 
-        validas.append({"nombre": nombre, "tipo": tipo, "texto": texto, "codigo": codigo})
+        validas.append(
+            {"nombre": nombre, "tipo": tipo, "texto": contenido, "codigo": codigo}
+        )
 
     for i, item in enumerate(validas):
         try:
@@ -254,8 +325,13 @@ def main(argv=None):
                 )
             )
             _imprimir(
-                f"✔ [{item['tipo']}] {item['nombre']} -> IA Pico: {max_ia}% | "
-                f"Similitud: {max_sim}% ({veredicto})"
+                texto["resultado"].format(
+                    tipo=item["tipo"],
+                    nombre=item["nombre"],
+                    pico=max_ia,
+                    sim=max_sim,
+                    veredicto=veredicto,
+                )
             )
         except Exception as error:  # fallo al puntuar: se anota y se sigue
             resultados.append(
@@ -268,7 +344,11 @@ def main(argv=None):
                     }
                 )
             )
-            _imprimir(f"✖ [{item['tipo']}] {item['nombre']} -> no se pudo puntuar: {error}")
+            _imprimir(
+                texto["error_puntuacion"].format(
+                    tipo=item["tipo"], nombre=item["nombre"], error=error
+                )
+            )
 
     df = pd.DataFrame(resultados, columns=COLUMNAS)
     df = df.sort_values(
@@ -284,6 +364,7 @@ def main(argv=None):
         "ruta": ruta,
         "reporte": args.salida,
         "modelo": None if args.sin_modelo else (args.modelo or MODELO_POR_DEFECTO),
+        "idioma": args.idioma,
         "total": len(resultados),
         "errores": errores,
     }
@@ -292,11 +373,11 @@ def main(argv=None):
         salida_json = {"resumen": resumen, "resultados": resultados}
         print(json.dumps(salida_json, ensure_ascii=False, indent=2))
     else:
-        _imprimir(f"\n¡Listo! Reporte guardado en '{args.salida}'.")
+        _imprimir(texto["listo"].format(salida=args.salida))
     if errores:
-        _imprimir(f"Aviso: {errores} archivo(s) no se pudieron analizar (ver columna Error).")
+        _imprimir(texto["aviso_errores"].format(n=errores))
 
-    return _codigo_salida(resultados, args.fail_on)
+    return _codigo_salida(resultados, nivel)
 
 
 if __name__ == "__main__":

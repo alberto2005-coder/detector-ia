@@ -119,6 +119,45 @@ def test_help_incluye_version_ruta_y_autor(capsys):
     assert "Alberto Ortiz Sánchez" in texto
 
 
+def test_los_alias_en_ingles_funcionan(tmp_path):
+    _escribir(tmp_path, "ensayo.md", TEXTO_IA)
+    salida = tmp_path / "reporte.csv"
+
+    codigo = main(["--folder", str(tmp_path), "--output", str(salida), "--no-model"])
+
+    assert codigo == 0
+    assert [fila["Archivo"] for fila in _leer(salida)] == ["ensayo.md"]
+
+
+def test_lang_en_traduce_los_mensajes(tmp_path, capsys):
+    _escribir(tmp_path, "ensayo.md", TEXTO_IA)
+    salida = tmp_path / "reporte.csv"
+
+    main(["-c", str(tmp_path), "-s", str(salida), "--sin-modelo", "--lang", "en"])
+
+    errores = capsys.readouterr().err
+    assert "Analysing 1 submission" in errores
+    assert "Done! Report saved to" in errores
+
+
+def test_idioma_es_alias_de_lang(tmp_path, capsys):
+    _escribir(tmp_path, "ensayo.md", TEXTO_IA)
+    salida = tmp_path / "reporte.csv"
+
+    main(["-c", str(tmp_path), "-s", str(salida), "--sin-modelo", "--idioma", "es"])
+
+    assert "Analizando 1 entrega" in capsys.readouterr().err
+
+
+def test_fail_on_acepta_el_valor_en_ingles(tmp_path):
+    _escribir(tmp_path, "ensayo.md", TEXTO_IA)
+    salida = tmp_path / "reporte.csv"
+
+    base = ["-c", str(tmp_path), "-s", str(salida), "--sin-modelo"]
+    assert main([*base, "--fail-on", "none"]) == 0
+    assert main([*base, "--fail-on", "high"]) == 1
+
+
 def test_sin_archivos_no_genera_reporte(tmp_path):
     salida = tmp_path / "reporte.csv"
     assert main(["-c", str(tmp_path), "-s", str(salida), "--sin-modelo"]) == 0

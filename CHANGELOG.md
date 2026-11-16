@@ -14,6 +14,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Se
 #### Añadido
 
 - `-c` acepta también la ruta de un único archivo (`--ruta`), no solo una carpeta.
+- Todos los flags tienen alias en inglés (`--folder`, `--path`, `--output`, `--model`, `--no-model`) y `--fail-on` acepta también `none`, `high` y `suspicious`.
+- `--lang {es,en}` (`--idioma`) traduce los mensajes de consola; el CSV y los veredictos no cambian.
 - Autor, licencia y repositorio en la ayuda de `-h`, y `__author__` en el paquete con el nombre completo.
 
 ### [0.2.0] — 2026-11-16
@@ -78,6 +80,8 @@ Primera versión utilizable del detector.
 #### Added
 
 - `-c` also accepts the path of a single file (`--ruta`), not just a folder.
+- Every flag has an English alias (`--folder`, `--path`, `--output`, `--model`, `--no-model`) and `--fail-on` also accepts `none`, `high` and `suspicious`.
+- `--lang {es,en}` (`--idioma`) translates the console messages; the CSV and the verdicts do not change.
 - Author, licence and repository in the `-h` help, and `__author__` in the package with the full name.
 
 ### [0.2.0] — 2026-11-16

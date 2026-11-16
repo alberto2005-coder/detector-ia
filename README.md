@@ -67,6 +67,7 @@ Con opciones:
 ```bash
 uv run detector-ia --carpeta entregas --salida reportes/marzo.csv
 uv run detector-ia -c ejemplos/misma_entrega.md --sin-modelo   # un solo archivo
+uv run detector-ia --folder entregas --output reporte.csv --lang en
 uv run detector-ia --modelo fakespot-ai/roberta-base-ai-text-detection-v1
 ```
 
@@ -80,13 +81,16 @@ python -m detector_ia --carpeta revision_ia
 
 | Opción | Por defecto | Descripción |
 | --- | --- | --- |
-| `-c`, `--carpeta`, `--ruta` | `revision_ia` | Carpeta con las entregas o ruta de un archivo concreto |
-| `-s`, `--salida` | `reporte_profesional_ia.csv` | Ruta del reporte generado |
-| `-m`, `--modelo` | RoBERTa de detección de IA | Modelo de Hugging Face a usar |
-| `--sin-modelo` | desactivado | Analiza solo con las señales estructurales, sin descargar el modelo |
+| `-c`, `--carpeta`, `--ruta`, `--folder`, `--path` | `revision_ia` | Carpeta con las entregas o ruta de un archivo concreto |
+| `-s`, `--salida`, `--output` | `reporte_profesional_ia.csv` | Ruta del reporte generado |
+| `-m`, `--modelo`, `--model` | RoBERTa de detección de IA | Modelo de Hugging Face a usar |
+| `--sin-modelo`, `--no-model` | desactivado | Analiza solo con las señales estructurales, sin descargar el modelo |
 | `--json` | desactivado | Escribe el resultado en JSON por la salida estándar y el progreso por la de errores |
-| `--fail-on` | `ninguno` | Devuelve código de salida 1 si el reporte alcanza `error`, `alto` o `sospechoso` |
+| `--fail-on` | `ninguno` | Devuelve código de salida 1 si el reporte alcanza `error`, `alto`/`high` o `sospechoso`/`suspicious` (también vale `none`) |
+| `--lang`, `--idioma` | `es` | Idioma de los mensajes de consola (`es`/`en`); el CSV no cambia |
 | `-V`, `--version` | — | Muestra la versión instalada y sale |
+
+Todos los flags, sus valores y la ayuda de `-h` se pueden escribir en español o en inglés: `--carpeta entregas` y `--folder entregas` hacen lo mismo, igual que `--salida`/`--output`. El CSV y los veredictos se quedan en español para que las columnas no cambien según el idioma; solo se traducen los mensajes de consola.
 
 ### Reporte
 
@@ -202,6 +206,7 @@ With options:
 ```bash
 uv run detector-ia --carpeta entregas --salida reportes/marzo.csv
 uv run detector-ia -c ejemplos/misma_entrega.md --sin-modelo   # a single file
+uv run detector-ia --folder entregas --output reporte.csv --lang en
 uv run detector-ia --modelo fakespot-ai/roberta-base-ai-text-detection-v1
 ```
 
@@ -215,13 +220,16 @@ python -m detector_ia --carpeta revision_ia
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `-c`, `--carpeta`, `--ruta` | `revision_ia` | Folder with the submissions, or the path of a single file |
-| `-s`, `--salida` | `reporte_profesional_ia.csv` | Path of the generated report |
-| `-m`, `--modelo` | AI-detection RoBERTa | Hugging Face model to use |
-| `--sin-modelo` | off | Structural signals only, without downloading the model |
+| `-c`, `--carpeta`, `--ruta`, `--folder`, `--path` | `revision_ia` | Folder with the submissions, or the path of a single file |
+| `-s`, `--salida`, `--output` | `reporte_profesional_ia.csv` | Path of the generated report |
+| `-m`, `--modelo`, `--model` | AI-detection RoBERTa | Hugging Face model to use |
+| `--sin-modelo`, `--no-model` | off | Structural signals only, without downloading the model |
 | `--json` | off | Write the result as JSON on stdout and progress on stderr |
-| `--fail-on` | `ninguno` | Exit with code 1 when the report reaches `error`, `alto` or `sospechoso` |
+| `--fail-on` | `ninguno` | Exit with code 1 when the report reaches `error`, `alto`/`high` or `sospechoso`/`suspicious` (`none` works too) |
+| `--lang`, `--idioma` | `es` | Language of the console messages (`es`/`en`); the CSV does not change |
 | `-V`, `--version` | — | Print the installed version and exit |
+
+Every flag, its values and the `-h` help can be written in Spanish or in English: `--carpeta entregas` and `--folder entregas` are the same thing, as are `--salida`/`--output`. The CSV and the verdicts stay in Spanish so the columns never change with the language; only the console messages are translated.
 
 ### Report
 

@@ -48,16 +48,16 @@ class AnalizadorIA:
     descargar el modelo, y `usar_modelo=False` permite trabajar sin él.
     """
 
-    def __init__(self, modelo=MODELO_POR_DEFECTO, detector=None, usar_modelo=True):
+    def __init__(self, modelo=MODELO_POR_DEFECTO, detector=None, usar_modelo=True, idioma="es"):
         self.modelo = modelo
         self.usar_modelo = usar_modelo
         self.detector = detector
         if usar_modelo and detector is None:
-            self.detector = self._cargar_modelo(modelo)
+            self.detector = self._cargar_modelo(modelo, idioma)
         self.historial_probabilidades = []  # diagnóstico y pruebas
 
     @staticmethod
-    def _cargar_modelo(modelo):
+    def _cargar_modelo(modelo, idioma="es"):
         configurar_cache_modelo()
         try:
             from transformers import pipeline
@@ -67,7 +67,14 @@ class AnalizadorIA:
                 "  uv sync --extra modelo\n"
                 "o ejecuta el análisis sin modelo con --sin-modelo."
             ) from error
-        print("Cargando motor híbrido (Neuronal + Huella Estructural Español + Anti-Plagio)...")
+        aviso = {
+            "es": "Cargando motor híbrido (Neuronal + Huella Estructural Español + Anti-Plagio)...",
+            "en": (
+                "Loading hybrid engine (neural + Spanish structural fingerprint "
+                "+ anti-plagiarism)..."
+            ),
+        }
+        print(aviso.get(idioma, aviso["es"]))
         return pipeline("text-classification", model=modelo)
 
     def _huella_llm_espanol(self, texto):
