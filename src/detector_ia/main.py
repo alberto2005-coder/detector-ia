@@ -63,6 +63,10 @@ def _juzgar(media_ia, max_ia, max_sim):
     return "Normal"
 
 
+def _sin_extension(nombre):
+    return os.path.splitext(os.path.basename(nombre))[0].strip().lower()
+
+
 def main(argv=None):
     # En consolas de Windows (cp1252) los acentos y el ✔ del progreso rompen el print
     if hasattr(sys.stdout, "reconfigure"):
@@ -119,9 +123,13 @@ def main(argv=None):
         max_sim = 0.0
         companero = "Ninguno"
         base_comp = item["codigo"] if item["codigo"] else item["texto"]
+        nombre_base = _sin_extension(item["nombre"])
 
         for j, otro in enumerate(entregas):
             if i == j:
+                continue
+            # El mismo trabajo entregado en dos formatos (p. ej. PDF y TXT) no es copia
+            if _sin_extension(otro["nombre"]) == nombre_base:
                 continue
             otro_comp = otro["codigo"] if otro["codigo"] else otro["texto"]
             sim = analizador.similitud_coseno(base_comp, otro_comp)
