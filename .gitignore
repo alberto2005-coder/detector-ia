@@ -9,6 +9,10 @@ wheels/
 # Virtual environments
 .venv
 
+# Cachés de herramientas
+.pytest_cache/
+.ruff_cache/
+
 # Modelo descargado de Hugging Face (~500 MB)
 cache_modelo/
 
