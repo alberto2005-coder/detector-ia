@@ -41,7 +41,7 @@ Además se calcula la **similitud de coseno** (bolsa de palabras) entre todas la
 Requiere Python 3.13 o superior y, si no tienes `uv`, puedes instalarlo desde [astral.sh/uv](https://astral.sh/uv).
 
 ```bash
-git clone <URL-del-repositorio>
+git clone https://github.com/alberto2005-coder/detector-ia.git
 cd detector-ia
 uv sync --extra modelo
 ```
@@ -175,7 +175,7 @@ Each submission is split into blocks of ~1500 characters, and every block longer
 Requires Python 3.13 or newer; if you don't have `uv`, install it from [astral.sh/uv](https://astral.sh/uv).
 
 ```bash
-git clone <repository-URL>
+git clone https://github.com/alberto2005-coder/detector-ia.git
 cd detector-ia
 uv sync --extra modelo
 ```

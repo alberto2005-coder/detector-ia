@@ -37,6 +37,12 @@ dependencies = [
     "python-docx>=1.2.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/alberto2005-coder/detector-ia"
+Repository = "https://github.com/alberto2005-coder/detector-ia"
+Issues = "https://github.com/alberto2005-coder/detector-ia/issues"
+Changelog = "https://github.com/alberto2005-coder/detector-ia/blob/main/CHANGELOG.md"
+
 [project.optional-dependencies]
 # Sin este extra la herramienta funciona con --sin-modelo, solo con las señales estructurales
 modelo = [

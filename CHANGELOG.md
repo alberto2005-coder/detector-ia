@@ -24,6 +24,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Se
 - `docs/METODO.md` y `docs/USO_RESPONSABLE.md`, código de conducta y plantillas de issue y pull request.
 - `ejemplos/` con textos inventados y `evaluacion/` con corpus etiquetado y script de métricas.
 - Flag `-V/--version` y metadatos del paquete bilingües, para que PyPI muestre el resumen en español e inglés.
+- Enlaces del repositorio (homepage, issues y changelog) en los metadatos del paquete.
 
 #### Cambiado
 
@@ -78,6 +79,7 @@ Primera versión utilizable del detector.
 - `docs/METODO.md` and `docs/USO_RESPONSABLE.md`, code of conduct and issue/pull request templates.
 - `ejemplos/` with invented texts and `evaluacion/` with a labelled corpus and metrics script.
 - `-V/--version` flag and bilingual package metadata, so PyPI shows the summary in Spanish and English.
+- Repository links (homepage, issues and changelog) in the package metadata.
 - Contributing guide in `CONTRIBUTING.md`: environment, layout, how to add an input format and how to test changes.
 - MIT license in `LICENSE`, declared in the package metadata.
 
