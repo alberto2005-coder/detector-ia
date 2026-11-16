@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Instalar Python 3.13
+        run: uv python install 3.13
+
+      - name: Construir wheel y sdist
+        run: uv build
+
+      - name: Extraer las notas del CHANGELOG
+        run: uv run --no-project python scripts/notas_release.py "${GITHUB_REF_NAME#v}" > notas.md
+
+      - name: Publicar la release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: notas.md
+          files: dist/*

@@ -1,0 +1,55 @@
+name: Error / Bug
+description: Algo no funciona como debería · Something does not work as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        No adjuntes entregas reales de alumnos ni el CSV generado: son datos personales.
+        Describe el caso con texto inventado que reproduzca el problema.
+        · Never attach real student work or the generated CSV: it is personal data.
+
+  - type: textarea
+    id: que-pasa
+    attributes:
+      label: Qué pasa / What happens
+      description: Qué esperabas y qué ha pasado en su lugar · What you expected and what happened instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproducir
+    attributes:
+      label: Cómo reproducirlo / How to reproduce it
+      description: Comando usado y tipo de archivo (sin datos reales) · Command used and file type (no real data)
+      placeholder: |
+        uv run detector-ia -c ejemplos -s reporte.csv
+        Archivo: .docx de prueba inventado
+    validations:
+      required: true
+
+  - type: input
+    id: entorno
+    attributes:
+      label: Entorno / Environment
+      description: Versión de detector-ia, Python y sistema operativo · detector-ia version, Python and OS
+      placeholder: detector-ia 0.1.0, Python 3.13.15, Windows 11
+    validations:
+      required: true
+
+  - type: dropdown
+    id: modelo
+    attributes:
+      label: Modo de análisis / Analysis mode
+      options:
+        - Con modelo neuronal / With the neural model
+        - Sin modelo (--sin-modelo) / Without it
+    validations:
+      required: true
+
+  - type: textarea
+    id: traza
+    attributes:
+      label: Mensajes de error / Error output
+      description: Copia la salida de consola (revisa que no incluya datos de alumnos) · Paste the console output (check it contains no student data)
+      render: shell

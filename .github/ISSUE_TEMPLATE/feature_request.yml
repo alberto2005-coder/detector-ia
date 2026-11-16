@@ -1,0 +1,38 @@
+name: Mejora / Feature request
+description: Proponer una idea para el detector · Suggest an idea
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problema
+    attributes:
+      label: Qué problema resuelve / Problem it solves
+      description: Describe la situación real, no solo la solución · Describe the real situation, not only the solution
+    validations:
+      required: true
+
+  - type: textarea
+    id: propuesta
+    attributes:
+      label: Propuesta / Proposal
+      description: Cómo te gustaría que funcionara · How you would like it to work
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ambito
+    attributes:
+      label: Ámbito / Area
+      options:
+        - Formatos de entrada / Input formats
+        - Detección de IA / AI detection
+        - Similitud entre entregas / Similarity between submissions
+        - Reporte y CLI / Report and CLI
+        - Documentación / Documentation
+        - Otro / Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas consideradas / Alternatives considered
