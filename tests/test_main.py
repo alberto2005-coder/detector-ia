@@ -3,6 +3,7 @@ import json
 
 import pytest
 
+from detector_ia import __version__
 from detector_ia.main import COLUMNAS, _codigo_salida, _juzgar, main
 from tests.conftest import TEXTO_HUMANO, TEXTO_IA
 
@@ -70,6 +71,13 @@ def test_texto_corto_se_marca(tmp_path):
     main(["-c", str(tmp_path), "-s", str(salida), "--sin-modelo"])
 
     assert _leer(salida)[0]["Veredicto"] == "Poco texto"
+
+
+def test_version_en_la_cli(capsys):
+    with pytest.raises(SystemExit) as salida:
+        main(["--version"])
+    assert salida.value.code == 0
+    assert __version__ in capsys.readouterr().out
 
 
 def test_sin_archivos_no_genera_reporte(tmp_path):

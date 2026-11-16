@@ -3,6 +3,8 @@ import glob
 import json
 import os
 import sys
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as version_paquete
 
 import pandas as pd
 
@@ -36,6 +38,13 @@ COLUMNAS = [
 ]
 
 
+def _version():
+    try:
+        return version_paquete("detector-ia")
+    except PackageNotFoundError:  # ejecución desde el código sin instalar
+        return "0.0.0"
+
+
 def _parsear_argumentos(argv=None):
     parser = argparse.ArgumentParser(
         prog="detector-ia",
@@ -62,6 +71,13 @@ def _parsear_argumentos(argv=None):
         "--modelo",
         default=None,
         help="Modelo de Hugging Face a usar (por defecto, el RoBERTa de detección de IA).",
+    )
+    parser.add_argument(
+        "-V",
+        "--version",
+        action="version",
+        version=f"%(prog)s {_version()}",
+        help="Muestra la versión y sale.",
     )
     parser.add_argument(
         "--sin-modelo",

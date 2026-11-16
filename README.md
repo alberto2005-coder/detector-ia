@@ -85,6 +85,7 @@ python -m detector_ia --carpeta revision_ia
 | `--sin-modelo` | desactivado | Analiza solo con las señales estructurales, sin descargar el modelo |
 | `--json` | desactivado | Escribe el resultado en JSON por la salida estándar y el progreso por la de errores |
 | `--fail-on` | `ninguno` | Devuelve código de salida 1 si el reporte alcanza `error`, `alto` o `sospechoso` |
+| `-V`, `--version` | — | Muestra la versión instalada y sale |
 
 ### Reporte
 
@@ -218,6 +219,7 @@ python -m detector_ia --carpeta revision_ia
 | `--sin-modelo` | off | Structural signals only, without downloading the model |
 | `--json` | off | Write the result as JSON on stdout and progress on stderr |
 | `--fail-on` | `ninguno` | Exit with code 1 when the report reaches `error`, `alto` or `sospechoso` |
+| `-V`, `--version` | — | Print the installed version and exit |
 
 ### Report
 

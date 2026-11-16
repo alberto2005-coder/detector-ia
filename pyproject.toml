@@ -1,8 +1,19 @@
 [project]
 name = "detector-ia"
-version = "0.1.0"
-description = "Detector de texto generado por IA y de copia entre entregas, con reporte CSV"
-keywords = ["ia", "plagio", "educacion", "roberta", "docencia"]
+version = "0.2.0"
+description = "Detector de texto generado por IA y de copia entre entregas · AI-text and plagiarism detection for student submissions"
+keywords = [
+    "ia",
+    "ai-detection",
+    "plagio",
+    "plagiarism",
+    "educacion",
+    "education",
+    "roberta",
+    "docencia",
+    "teaching",
+    "csv",
+]
 license = "MIT"
 license-files = ["LICENSE"]
 readme = "README.md"

@@ -9,7 +9,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Se
 
 ## Español
 
-### [Sin publicar]
+### [0.2.0] — 2026-11-16
 
 #### Añadido
 
@@ -23,6 +23,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Se
 - Integración continua en Windows y Linux, Dependabot y workflow de release que publica la nota extraída del CHANGELOG.
 - `docs/METODO.md` y `docs/USO_RESPONSABLE.md`, código de conducta y plantillas de issue y pull request.
 - `ejemplos/` con textos inventados y `evaluacion/` con corpus etiquetado y script de métricas.
+- Flag `-V/--version` y metadatos del paquete bilingües, para que PyPI muestre el resumen en español e inglés.
 
 #### Cambiado
 
@@ -64,7 +65,7 @@ Primera versión utilizable del detector.
 
 ## English
 
-### [Unreleased]
+### [0.2.0] — 2026-11-16
 
 #### Added
 
@@ -76,6 +77,7 @@ Primera versión utilizable del detector.
 - Continuous integration on Windows and Linux, Dependabot, and a release workflow that publishes notes extracted from the CHANGELOG.
 - `docs/METODO.md` and `docs/USO_RESPONSABLE.md`, code of conduct and issue/pull request templates.
 - `ejemplos/` with invented texts and `evaluacion/` with a labelled corpus and metrics script.
+- `-V/--version` flag and bilingual package metadata, so PyPI shows the summary in Spanish and English.
 - Contributing guide in `CONTRIBUTING.md`: environment, layout, how to add an input format and how to test changes.
 - MIT license in `LICENSE`, declared in the package metadata.
 

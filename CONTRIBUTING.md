@@ -59,6 +59,19 @@ Las pruebas usan un detector falso, así que no descargan el modelo ni necesitan
 
 Para probar la CLI a mano hay textos inventados: `uv run detector-ia -c ejemplos -s reporte_prueba.csv`. **No subas nunca entregas reales de alumnos** ni los CSV generados: son datos personales.
 
+### Publicar una versión
+
+1. Sube la versión en `pyproject.toml` y añade su entrada en `CHANGELOG.md`, igual en español y en inglés.
+2. Construye y revisa los artefactos antes de subir nada:
+
+```bash
+uv build
+uv publish --dry-run dist/*
+```
+
+3. Crea el tag y súbelo: `git tag v0.x.y && git push origin v0.x.y`. Ese push lanza la release de GitHub con las notas extraídas del CHANGELOG.
+4. Para PyPI, configura **Trusted Publishing** en el proyecto y publica con `uv publish`. Nunca commitees tokens: no hay ningún secreto en el repositorio.
+
 ### Commits
 
 - Mensajes en imperativo y con prefijo: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`.
@@ -127,6 +140,19 @@ uv run pytest
 The tests use a fake detector, so they neither download the model nor need the `modelo` extra. If you change detection, add or adjust a case in `tests/`; if you touch weights or thresholds, run them through `evaluacion/evaluar.py`.
 
 To try the CLI by hand there are invented texts: `uv run detector-ia -c ejemplos -s reporte_prueba.csv`. **Never commit real student work** or generated CSVs: that is personal data.
+
+### Publishing a release
+
+1. Bump the version in `pyproject.toml` and add its entry to `CHANGELOG.md`, in Spanish and English alike.
+2. Build and inspect the artifacts before pushing anything:
+
+```bash
+uv build
+uv publish --dry-run dist/*
+```
+
+3. Tag and push: `git tag v0.x.y && git push origin v0.x.y`. That push triggers the GitHub release with notes taken from the CHANGELOG.
+4. For PyPI, set up **Trusted Publishing** on the project and publish with `uv publish`. Never commit tokens: the repository holds no secrets.
 
 ### Commits
 
