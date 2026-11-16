@@ -1,7 +1,8 @@
 [project]
 name = "detector-ia"
 version = "0.1.0"
-description = "Add your description here"
+description = "Detector de texto generado por IA y de copia entre entregas, con reporte CSV"
+keywords = ["ia", "plagio", "educacion", "roberta", "docencia"]
 readme = "README.md"
 authors = [
     { name = "Alberto Ortiz", email = "albertoortixsanchez@gmail.com" }

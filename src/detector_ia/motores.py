@@ -1,5 +1,7 @@
 import os
-os.environ["HF_HOME"] = "./cache_modelo"
+
+# Guarda el modelo descargado dentro del proyecto (y respeta HF_HOME si ya está definido)
+os.environ.setdefault("HF_HOME", "./cache_modelo")
 
 import re
 import math

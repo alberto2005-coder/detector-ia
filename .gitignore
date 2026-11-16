@@ -9,5 +9,13 @@ wheels/
 # Virtual environments
 .venv
 
+# Modelo descargado de Hugging Face (~500 MB)
 cache_modelo/
+
+# Entregas de alumnos: nunca se suben al repositorio
 revision_ia/*
+!revision_ia/.gitkeep
+
+# Reportes generados
+reporte_*.csv
+*.reporte.csv
