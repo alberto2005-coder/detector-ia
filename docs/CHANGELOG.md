@@ -1,0 +1,84 @@
+# Changelog
+
+Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versionado [SemVer](https://semver.org/lang/es/).
+Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [SemVer](https://semver.org/).
+
+[Español](#español) · [English](#english)
+
+---
+
+## Español
+
+### [Sin publicar]
+
+#### Añadido
+
+- Documentación en `docs/` con guía de uso, changelog y guía de contribución, bilingüe en cada archivo.
+
+### [0.1.0] — 2026-11-16
+
+Primera versión utilizable del detector.
+
+#### Añadido
+
+- Análisis de entregas en `.ipynb`, `.pdf`, `.docx`, `.md` y `.txt`.
+- Motor híbrido: huella estructural en español (50 %), uniformidad estadística (30 %) y modelo neuronal RoBERTa (20 %).
+- Detección de copia entre entregas por similitud de coseno, con código para cuadernos y texto redactado para el resto.
+- Reporte CSV en UTF-8 con BOM y separador `;`, ordenado por riesgo, con veredicto y fragmento sospechoso.
+- Argumentos de línea de comandos `-c/--carpeta`, `-s/--salida` y `-m/--modelo`.
+- README principal con el método, los pesos y los umbrales.
+
+#### Corregido
+
+- El comando `detector-ia` y `python -m detector_ia` fallaban por falta de `src/detector_ia/__init__.py`.
+- La ejecución se interrumpía antes de escribir el CSV en consolas Windows cp1252, porque el ✔ del progreso no se podía codificar.
+- Un mismo trabajo entregado en dos formatos (por ejemplo PDF y TXT) se marcaba al 100 % de similitud consigo mismo y aparecía como copia entre alumnos.
+
+#### Cambiado
+
+- La carpeta de entrada, el reporte y el modelo ya no están fijos en el código: los umbrales son constantes con nombre y las rutas son argumentos.
+- `HF_HOME` solo se define si no estaba ya configurado, para respetar un caché de modelos propio.
+- `reporte_*.csv` y el contenido de `revision_ia/` quedan fuera de git; se añade `revision_ia/.gitkeep` para que el repositorio se pueda clonar y usar.
+
+#### Notas
+
+- La herramienta es una ayuda a la revisión: no es una prueba de uso de IA y puede dar falsos positivos y negativos.
+
+---
+
+## English
+
+### [Unreleased]
+
+#### Added
+
+- Documentation under `docs/` with a usage guide, changelog and contributing guide, bilingual within each file.
+
+### [0.1.0] — 2026-11-16
+
+First usable release of the detector.
+
+#### Added
+
+- Analysis of `.ipynb`, `.pdf`, `.docx`, `.md` and `.txt` submissions.
+- Hybrid engine: Spanish structural fingerprint (50 %), statistical uniformity (30 %) and RoBERTa neural model (20 %).
+- Copy detection between submissions using cosine similarity, on code for notebooks and on written text for the rest.
+- CSV report in UTF-8 with BOM and `;` separator, sorted by risk, with a verdict and the suspicious passage.
+- Command-line arguments `-c/--carpeta`, `-s/--salida` and `-m/--modelo`.
+- Main README describing the method, weights and thresholds.
+
+#### Fixed
+
+- The `detector-ia` command and `python -m detector_ia` failed because `src/detector_ia/__init__.py` was missing.
+- Runs aborted before writing the CSV on Windows cp1252 consoles, because the progress ✔ could not be encoded.
+- The same assignment submitted in two formats (for example PDF and TXT) scored 100 % similarity against itself and was reported as student-to-student copying.
+
+#### Changed
+
+- Input folder, report path and model are no longer hardcoded: thresholds are named constants and paths are arguments.
+- `HF_HOME` is only set when not already configured, so a custom model cache is respected.
+- `reporte_*.csv` and the contents of `revision_ia/` are excluded from git; `revision_ia/.gitkeep` is added so the repository can be cloned and used.
+
+#### Notes
+
+- This is a review aid: it is not proof of AI use and can produce both false positives and false negatives.

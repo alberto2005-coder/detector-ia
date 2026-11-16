@@ -6,6 +6,15 @@ Analiza cuadernos de Jupyter (`.ipynb`), PDF, Word (`.docx`), Markdown (`.md`) y
 
 > Es una ayuda para la revisión, **no una prueba**. Un porcentaje alto es un motivo para hablar con el alumno o revisar el trabajo a mano; nunca un veredicto automático.
 
+## Documentación
+
+Guías completas en `docs/`, en español e inglés dentro del mismo archivo:
+
+- [Guía de uso](docs/USAGE.md): opciones, reporte, umbrales y solución de problemas.
+- [Changelog](docs/CHANGELOG.md): historial de cambios por versión.
+- [Contribuir](docs/CONTRIBUTING.md): entorno, estructura y convención de commits.
+- [Índice de documentación](docs/README.md).
+
 ## Cómo funciona
 
 Cada entrega se parte en bloques de ~1500 caracteres y cada bloque se puntúa combinando tres señales:
@@ -81,6 +90,7 @@ src/detector_ia/
 ├── main.py          # CLI, umbrales y generación del reporte
 ├── extractores.py   # Lectura de .ipynb, .pdf, .docx, .txt y .md
 └── motores.py       # Modelo neuronal, huella estructural y similitud
+docs/                # Documentación bilingüe
 revision_ia/         # Entregas de entrada (ignoradas por git)
 ```
 
