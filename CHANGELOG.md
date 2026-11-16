@@ -14,6 +14,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Se
 #### Añadido
 
 - Documentación bilingüe: español e inglés dentro de cada archivo.
+- README principal bilingüe y política de seguridad en `SECURITY.md`.
 - Licencia MIT en `LICENSE` y declarada en los metadatos del paquete.
 
 #### Cambiado
@@ -59,6 +60,7 @@ Primera versión utilizable del detector.
 #### Added
 
 - Bilingual documentation: Spanish and English within each file.
+- Bilingual root README and a security policy in `SECURITY.md`.
 - MIT license in `LICENSE`, declared in the package metadata.
 
 #### Changed
