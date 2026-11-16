@@ -10,7 +10,7 @@ Analiza cuadernos de Jupyter (`.ipynb`), PDF, Word (`.docx`), Markdown (`.md`) y
 
 Guías completas en `docs/`, en español e inglés dentro del mismo archivo:
 
-- [Guía de uso](docs/USAGE.md): opciones, reporte, umbrales y solución de problemas.
+- [Uso y formatos](docs/USAGE.md): qué se extrae de cada formato y solución de problemas.
 - [Changelog](docs/CHANGELOG.md): historial de cambios por versión.
 - [Contribuir](docs/CONTRIBUTING.md): entorno, estructura y convención de commits.
 - [Índice de documentación](docs/README.md).
