@@ -17,9 +17,7 @@ keywords = [
 license = "MIT"
 license-files = ["LICENSE"]
 readme = "README.md"
-authors = [
-    { name = "Alberto Ortiz Sánchez", email = "albertoortixsanchez@gmail.com" }
-]
+authors = [{ name = "Alberto Ortiz Sánchez" }]
 requires-python = ">=3.13"
 classifiers = [
     "Development Status :: 4 - Beta",
