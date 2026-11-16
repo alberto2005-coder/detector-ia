@@ -22,7 +22,7 @@ src/detector_ia/
 ├── main.py          # CLI, umbrales, veredictos y generación del CSV
 ├── extractores.py   # Lectura de cada formato
 └── motores.py       # Modelo neuronal, huella estructural y similitud
-docs/                # Documentación bilingüe
+docs/                # Índice y detalles de uso (bilingües)
 revision_ia/         # Entregas de entrada (ignorada por git)
 ```
 
@@ -75,7 +75,7 @@ src/detector_ia/
 ├── main.py          # CLI, thresholds, verdicts and CSV output
 ├── extractores.py   # One reader per format
 └── motores.py       # Neural model, structural fingerprint and similarity
-docs/                # Bilingual documentation
+docs/                # Index and usage details (bilingual)
 revision_ia/         # Input submissions (git-ignored)
 ```
 

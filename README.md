@@ -11,8 +11,8 @@ Analiza cuadernos de Jupyter (`.ipynb`), PDF, Word (`.docx`), Markdown (`.md`) y
 Guías completas en `docs/`, en español e inglés dentro del mismo archivo:
 
 - [Uso y formatos](docs/USAGE.md): qué se extrae de cada formato y solución de problemas.
-- [Changelog](docs/CHANGELOG.md): historial de cambios por versión.
-- [Contribuir](docs/CONTRIBUTING.md): entorno, estructura y convención de commits.
+- [Changelog](CHANGELOG.md): historial de cambios por versión.
+- [Contribuir](CONTRIBUTING.md): entorno, estructura y convención de commits.
 - [Índice de documentación](docs/README.md).
 
 ## Cómo funciona
@@ -90,7 +90,7 @@ src/detector_ia/
 ├── main.py          # CLI, umbrales y generación del reporte
 ├── extractores.py   # Lectura de .ipynb, .pdf, .docx, .txt y .md
 └── motores.py       # Modelo neuronal, huella estructural y similitud
-docs/                # Documentación bilingüe
+docs/                # Índice y detalles de uso (bilingües)
 revision_ia/         # Entregas de entrada (ignoradas por git)
 ```
 

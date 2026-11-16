@@ -15,6 +15,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Se
 
 - Documentación en `docs/` con guía de uso, changelog y guía de contribución, bilingüe en cada archivo.
 
+#### Cambiado
+
+- `CHANGELOG.md` y `CONTRIBUTING.md` se mueven a la raíz, donde GitHub los reconoce; `docs/` queda como índice y detalles de uso.
+
 ### [0.1.0] — 2026-11-16
 
 Primera versión utilizable del detector.
@@ -53,6 +57,10 @@ Primera versión utilizable del detector.
 #### Added
 
 - Documentation under `docs/` with a usage guide, changelog and contributing guide, bilingual within each file.
+
+#### Changed
+
+- `CHANGELOG.md` and `CONTRIBUTING.md` moved to the repository root, where GitHub detects them; `docs/` keeps the index and usage details.
 
 ### [0.1.0] — 2026-11-16
 
