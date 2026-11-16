@@ -14,6 +14,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Se
 #### Añadido
 
 - Documentación en `docs/` con guía de uso, changelog y guía de contribución, bilingüe en cada archivo.
+- Licencia MIT en `LICENSE` y declarada en los metadatos del paquete.
 
 #### Cambiado
 
@@ -57,6 +58,7 @@ Primera versión utilizable del detector.
 #### Added
 
 - Documentation under `docs/` with a usage guide, changelog and contributing guide, bilingual within each file.
+- MIT license in `LICENSE`, declared in the package metadata.
 
 #### Changed
 

@@ -100,4 +100,4 @@ Las entregas de los alumnos y los reportes generados están excluidos de git (`.
 
 ## Licencia
 
-Sin licencia definida por ahora: el repositorio queda con todos los derechos reservados hasta que se añada una.
+Distribuido bajo la licencia MIT. Consulta [LICENSE](LICENSE) para el texto completo.

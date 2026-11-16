@@ -3,6 +3,8 @@ name = "detector-ia"
 version = "0.1.0"
 description = "Detector de texto generado por IA y de copia entre entregas, con reporte CSV"
 keywords = ["ia", "plagio", "educacion", "roberta", "docencia"]
+license = "MIT"
+license-files = ["LICENSE"]
 readme = "README.md"
 authors = [
     { name = "Alberto Ortiz", email = "albertoortixsanchez@gmail.com" }
