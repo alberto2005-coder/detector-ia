@@ -23,15 +23,22 @@ detector-ia/
 │   ├── main.py          # CLI, umbrales, veredictos y generación del CSV
 │   ├── extractores.py   # Lectura de cada formato
 │   └── motores.py       # Modelo neuronal, huella estructural y similitud
-├── docs/                # Índice y detalles de uso (bilingües)
+├── tests/               # Pruebas con detector falso (uv run pytest)
+├── docs/                # Índice, método, uso responsable y formatos
+├── ejemplos/            # Textos inventados de prueba
+├── evaluacion/          # Corpus etiquetado y script de métricas
+├── scripts/             # Notas de release desde el CHANGELOG
+├── .github/             # CI, releases, Dependabot y plantillas
 ├── revision_ia/         # Entregas de entrada (ignorada por git)
 ├── README.md            # Guía completa, en español e inglés
 ├── CONTRIBUTING.md      # Esta guía
 ├── SECURITY.md          # Política de seguridad
+├── CODE_OF_CONDUCT.md   # Código de conducta
 ├── CHANGELOG.md         # Historial de cambios por versión
 ├── LICENSE              # Licencia MIT
-├── pyproject.toml       # Dependencias y entry point detector-ia
+├── pyproject.toml       # Dependencias, extras y entry point
 ├── uv.lock              # Versiones exactas de las dependencias
+├── .gitattributes       # Finales de línea normalizados
 └── .gitignore           # Excluye .venv, cache_modelo y entregas
 ```
 
@@ -43,14 +50,14 @@ detector-ia/
 
 ### Pruebas
 
-No hay suite automática todavía. Antes de abrir un cambio, comprueba al menos:
-
 ```bash
-uv run detector-ia --help
-uv run detector-ia -c <carpeta-de-prueba> -s reporte_prueba.csv
+uv run ruff check .
+uv run pytest
 ```
 
-Con una entrega claramente generada y otra escrita a mano, para ver que los veredictos tienen sentido. **No subas nunca entregas reales de alumnos** ni los CSV generados: son datos personales.
+Las pruebas usan un detector falso, así que no descargan el modelo ni necesitan el extra `modelo`. Si cambias la detección, añade o ajusta un caso en `tests/`; si tocas pesos o umbrales, pásalos por `evaluacion/evaluar.py`.
+
+Para probar la CLI a mano hay textos inventados: `uv run detector-ia -c ejemplos -s reporte_prueba.csv`. **No subas nunca entregas reales de alumnos** ni los CSV generados: son datos personales.
 
 ### Commits
 
@@ -85,15 +92,22 @@ detector-ia/
 │   ├── main.py          # CLI, thresholds, verdicts and CSV output
 │   ├── extractores.py   # One reader per format
 │   └── motores.py       # Neural model, structural fingerprint and similarity
-├── docs/                # Index and usage details (bilingual)
+├── tests/               # Tests with a fake detector (uv run pytest)
+├── docs/                # Index, method, responsible use and formats
+├── ejemplos/            # Invented test texts
+├── evaluacion/          # Labelled corpus and metrics script
+├── scripts/             # Release notes from the CHANGELOG
+├── .github/             # CI, releases, Dependabot and templates
 ├── revision_ia/         # Input submissions (git-ignored)
 ├── README.md            # Full guide, in Spanish and English
 ├── CONTRIBUTING.md      # This guide
 ├── SECURITY.md          # Security policy
+├── CODE_OF_CONDUCT.md   # Code of conduct
 ├── CHANGELOG.md         # Change history per version
 ├── LICENSE              # MIT license
-├── pyproject.toml       # Dependencies and detector-ia entry point
+├── pyproject.toml       # Dependencies, extras and entry point
 ├── uv.lock              # Exact dependency versions
+├── .gitattributes       # Normalized line endings
 └── .gitignore           # Excludes .venv, cache_modelo and submissions
 ```
 
@@ -105,14 +119,14 @@ detector-ia/
 
 ### Testing
 
-There is no automated suite yet. Before opening a change, at least check:
-
 ```bash
-uv run detector-ia --help
-uv run detector-ia -c <test-folder> -s reporte_prueba.csv
+uv run ruff check .
+uv run pytest
 ```
 
-Use one clearly generated submission and one hand-written one, to confirm the verdicts make sense. **Never commit real student work** or generated CSVs: that is personal data.
+The tests use a fake detector, so they neither download the model nor need the `modelo` extra. If you change detection, add or adjust a case in `tests/`; if you touch weights or thresholds, run them through `evaluacion/evaluar.py`.
+
+To try the CLI by hand there are invented texts: `uv run detector-ia -c ejemplos -s reporte_prueba.csv`. **Never commit real student work** or generated CSVs: that is personal data.
 
 ### Commits
 
