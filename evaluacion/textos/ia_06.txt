@@ -1,0 +1,1 @@
+El análisis de redes sociales permite identificar patrones de opinión con precisión creciente. No obstante, conviene considerar los sesgos de la muestra. En este sentido, la interpretación de los resultados exige cautela metodológica. Asimismo, la privacidad de los usuarios constituye un límite que ninguna técnica debería ignorar en ningún caso.
