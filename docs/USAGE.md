@@ -2,8 +2,8 @@
 
 [Español](#español) · [English](#english)
 
-Las opciones del comando, las columnas del reporte y los umbrales están en la [guía completa](../README.md#uso); aquí solo van los detalles que no aparecen allí.
-Command options, report columns and thresholds live in the [full guide](../README.md#uso); this page only covers details not covered there.
+Las opciones del comando, las columnas del reporte y los umbrales están en la [guía completa](../README.md); aquí solo van los detalles que no aparecen allí.
+Command options, report columns and thresholds live in the [full guide](../README.md); this page only covers details not covered there.
 
 ---
 
@@ -22,7 +22,7 @@ Crea una carpeta (por defecto `revision_ia/`) y copia dentro los archivos a anal
 
 Los archivos con menos de 120 caracteres de texto útil se marcan como `Poco texto` y no se puntúan.
 
-En los cuadernos la similitud se calcula sobre el código; en el resto de formatos, sobre el texto redactado. Un mismo trabajo entregado en dos formatos (por ejemplo `.pdf` y `.txt`) no se cuenta como copia entre alumnos.
+En los cuadernos la similitud se calcula sobre el código (o sobre su texto, si el cuaderno no tiene código); en el resto de formatos, sobre el texto redactado. Un mismo trabajo entregado en dos formatos (por ejemplo `.pdf` y `.txt`) no se cuenta como copia entre alumnos.
 
 ### Salida por consola
 
@@ -65,7 +65,7 @@ Create a folder (default `revision_ia/`) and copy the files to analyse into it.
 
 Files with fewer than 120 characters of usable text are reported as `Poco texto` and not scored.
 
-In notebooks similarity is computed over code; in every other format, over the written text. The same assignment submitted in two formats (say `.pdf` and `.txt`) is not counted as student-to-student copying.
+In notebooks similarity is computed over code (or over their text, when the notebook has no code); in every other format, over the written text. The same assignment submitted in two formats (say `.pdf` and `.txt`) is not counted as student-to-student copying.
 
 ### Console output
 

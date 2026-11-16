@@ -38,7 +38,7 @@ No hay suite automática todavía. Antes de abrir un cambio, comprueba al menos:
 
 ```bash
 uv run detector-ia --help
-uv run detector-ia -c <carpeta-de-prueba> -s /tmp/salida.csv
+uv run detector-ia -c <carpeta-de-prueba> -s reporte_prueba.csv
 ```
 
 Con una entrega claramente generada y otra escrita a mano, para ver que los veredictos tienen sentido. **No subas nunca entregas reales de alumnos** ni los CSV generados: son datos personales.
@@ -91,7 +91,7 @@ There is no automated suite yet. Before opening a change, at least check:
 
 ```bash
 uv run detector-ia --help
-uv run detector-ia -c <test-folder> -s /tmp/output.csv
+uv run detector-ia -c <test-folder> -s reporte_prueba.csv
 ```
 
 Use one clearly generated submission and one hand-written one, to confirm the verdicts make sense. **Never commit real student work** or generated CSVs: that is personal data.

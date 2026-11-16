@@ -8,7 +8,7 @@ Analiza cuadernos de Jupyter (`.ipynb`), PDF, Word (`.docx`), Markdown (`.md`) y
 
 ## Documentación
 
-Guías completas en `docs/`, en español e inglés dentro del mismo archivo:
+Guías en español e inglés dentro de cada archivo:
 
 - [Uso y formatos](docs/USAGE.md): qué se extrae de cada formato y solución de problemas.
 - [Changelog](CHANGELOG.md): historial de cambios por versión.
@@ -17,7 +17,7 @@ Guías completas en `docs/`, en español e inglés dentro del mismo archivo:
 
 ## Cómo funciona
 
-Cada entrega se parte en bloques de ~1500 caracteres y cada bloque se puntúa combinando tres señales:
+Cada entrega se parte en bloques de ~1500 caracteres y cada bloque de más de 300 caracteres se puntúa combinando tres señales:
 
 | Señal | Peso | Qué mide |
 | --- | --- | --- |
@@ -25,7 +25,7 @@ Cada entrega se parte en bloques de ~1500 caracteres y cada bloque se puntúa co
 | Uniformidad estadística | 30 % | Baja variación en la longitud de las frases, típica de texto generado |
 | Red neuronal | 20 % | [fakespot-ai/roberta-base-ai-text-detection-v1](https://huggingface.co/fakespot-ai/roberta-base-ai-text-detection-v1) |
 
-Además se calcula la **similitud de coseno** (bolsa de palabras) entre todas las entregas: en los cuadernos se compara el código y en el resto el texto redactado. Un mismo trabajo entregado en dos formatos (por ejemplo PDF y TXT) no se cuenta como copia.
+Además se calcula la **similitud de coseno** (bolsa de palabras) entre todas las entregas: en los cuadernos se compara el código (o el texto, si el cuaderno no tiene código) y en el resto el texto redactado. Un mismo trabajo entregado en dos formatos (por ejemplo PDF y TXT) no se cuenta como copia.
 
 ## Instalación
 
@@ -75,7 +75,7 @@ python -m detector_ia --carpeta revision_ia
 El CSV se guarda en UTF-8 con BOM y separador `;` para que abra directamente en Excel en español. Columnas:
 
 - **Archivo / Formato**: nombre y extensión de la entrega.
-- **IA_Media (%)**: media de la puntuación híbrida de todos los bloques.
+- **IA_Media (%)**: media de la puntuación híbrida de los bloques evaluados.
 - **IA_Pico_Max (%)**: bloque con la puntuación más alta, el que más se parece a texto de IA.
 - **Similitud_Companero (%)** y **Coincide_Con**: entrega más parecida y su nombre si supera el 75 %.
 - **Veredicto**: `ALTO RIESGO IA`, `REVISAR COPIA ENTRE ALUMNOS`, `Sospechoso (Revisar)`, `Normal` o `Poco texto`.
