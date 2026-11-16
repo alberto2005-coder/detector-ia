@@ -15,12 +15,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Se
 
 - Documentación bilingüe: español e inglés dentro de cada archivo.
 - README principal bilingüe y política de seguridad en `SECURITY.md`.
+- Guía de contribución en `CONTRIBUTING.md`: entorno, estructura, cómo añadir un formato de entrada y cómo probar los cambios.
 - Licencia MIT en `LICENSE` y declarada en los metadatos del paquete.
 
 #### Cambiado
 
 - `CHANGELOG.md` se queda en la raíz, donde GitHub lo reconoce, y `docs/` pasa a ser solo el índice y los detalles de uso.
-- Se elimina la guía de contribución propia: GitHub usará la del repositorio `.github` de la cuenta.
 
 ### [0.1.0] — 2026-11-16
 
@@ -61,12 +61,12 @@ Primera versión utilizable del detector.
 
 - Bilingual documentation: Spanish and English within each file.
 - Bilingual root README and a security policy in `SECURITY.md`.
+- Contributing guide in `CONTRIBUTING.md`: environment, layout, how to add an input format and how to test changes.
 - MIT license in `LICENSE`, declared in the package metadata.
 
 #### Changed
 
 - `CHANGELOG.md` stays at the repository root, where GitHub detects it, and `docs/` is now only the index and usage details.
-- The repository-specific contributing guide is removed: GitHub falls back to the one in the account's `.github` repository.
 
 ### [0.1.0] — 2026-11-16
 

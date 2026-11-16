@@ -19,6 +19,7 @@ Guías en español e inglés dentro de cada archivo:
 - [Uso y formatos](docs/USAGE.md): qué se extrae de cada formato y solución de problemas.
 - [Changelog](CHANGELOG.md): historial de cambios por versión.
 - [Seguridad](SECURITY.md): cómo reportar un problema y qué datos no compartir.
+- [Contribuir](CONTRIBUTING.md): entorno, estructura del código y convención de commits.
 - [Índice de documentación](docs/README.md).
 
 ### Cómo funciona
@@ -125,6 +126,7 @@ Guides in Spanish and English within each file:
 - [Usage and formats](docs/USAGE.md): what is extracted from each format and troubleshooting.
 - [Changelog](CHANGELOG.md): change history per version.
 - [Security](SECURITY.md): how to report a problem and which data never to share.
+- [Contributing](CONTRIBUTING.md): environment, code layout and commit convention.
 - [Documentation index](docs/README.md).
 
 ### How it works
