@@ -13,9 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Calcular la versión
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
-
       - uses: astral-sh/setup-uv@v6
 
       - name: Instalar Python 3.13
@@ -25,12 +22,12 @@ jobs:
         run: uv build
 
       - name: Extraer las notas del CHANGELOG
-        run: uv run --no-project python scripts/notas_release.py "$VERSION" > notas.md
+        run: uv run --no-project python scripts/notas_release.py "${GITHUB_REF_NAME#v}" > notas.md
 
       - name: Publicar la release
         uses: softprops/action-gh-release@v2
         with:
-          name: detector-ia ${{ env.VERSION }}
+          name: detector-ia ${{ github.ref_name }}
           body_path: notas.md
           # Solo los artefactos del paquete, no cualquier cosa que haya en dist/
           files: |
