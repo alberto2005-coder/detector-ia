@@ -25,7 +25,7 @@ jobs:
         run: uv run --no-project python scripts/notas_release.py "${GITHUB_REF_NAME#v}" > notas.md
 
       - name: Publicar la release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: detector-ia ${{ github.ref_name }}
           body_path: notas.md
