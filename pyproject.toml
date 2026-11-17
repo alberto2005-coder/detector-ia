@@ -1,6 +1,6 @@
 [project]
 name = "detector-ia"
-version = "0.2.0"
+version = "1.0.0"
 description = "Detector de texto generado por IA y de copia entre entregas · AI-text and plagiarism detection for student submissions"
 keywords = [
     "ia",

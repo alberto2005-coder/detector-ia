@@ -9,7 +9,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Se
 
 ## Español
 
-### [Sin publicar]
+### [1.0.0] — 2026-11-17
 
 #### Añadido
 
@@ -17,6 +17,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Se
 - Todos los flags tienen alias en inglés (`--folder`, `--path`, `--output`, `--model`, `--no-model`) y `--fail-on` acepta también `none`, `high` y `suspicious`.
 - `--lang {es,en}` (`--idioma`) traduce los mensajes de consola; el CSV y los veredictos no cambian.
 - Autor, licencia y repositorio en la ayuda de `-h`, y `__author__` en el paquete con el nombre completo.
+- Publicación automática en PyPI con Trusted Publishing desde el workflow de release.
 
 ### [0.2.0] — 2026-11-16
 
@@ -75,7 +76,7 @@ Primera versión utilizable del detector.
 
 ## English
 
-### [Unreleased]
+### [1.0.0] — 2026-11-17
 
 #### Added
 
@@ -83,6 +84,7 @@ Primera versión utilizable del detector.
 - Every flag has an English alias (`--folder`, `--path`, `--output`, `--model`, `--no-model`) and `--fail-on` also accepts `none`, `high` and `suspicious`.
 - `--lang {es,en}` (`--idioma`) translates the console messages; the CSV and the verdicts do not change.
 - Author, licence and repository in the `-h` help, and `__author__` in the package with the full name.
+- Automatic PyPI publishing with Trusted Publishing from the release workflow.
 
 ### [0.2.0] — 2026-11-16
 

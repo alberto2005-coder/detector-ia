@@ -29,3 +29,31 @@ jobs:
         with:
           body_path: notas.md
           files: dist/*
+
+      - name: Guardar los artefactos
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  pypi:
+    name: Publicar en PyPI
+    needs: publicar
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/detector-ia
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - uses: astral-sh/setup-uv@v6
+
+      # Trusted Publishing: sin tokens, el token lo emite GitHub para PyPI
+      - name: uv publish
+        run: uv publish --trusted-publishing always dist/*
