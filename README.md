@@ -38,7 +38,20 @@ Además se calcula la **similitud de coseno** (bolsa de palabras) entre todas la
 
 ### Instalación
 
-Requiere Python 3.13 o superior y, si no tienes `uv`, puedes instalarlo desde [astral.sh/uv](https://astral.sh/uv).
+Requiere Python 3.13 o superior.
+
+```bash
+pip install detector-ia            # señales estructurales, sin modelo neuronal
+pip install "detector-ia[modelo]"  # con el modelo neuronal (torch + transformers)
+```
+
+El extra `modelo` instala `torch` y `transformers`; sin él la herramienta sigue funcionando con `--sin-modelo`, usando solo las señales estructurales. La primera ejecución descarga el modelo (~500 MB) en `cache_modelo/`, que está fuera del control de versiones. Las siguientes arrancan sin conexión.
+
+Con el paquete instalado el comando es `detector-ia`; comprueba que responde con `detector-ia --version`.
+
+#### Desde el código fuente
+
+Si prefieres trabajar sobre el repositorio, clona y sincroniza. Para esto hace falta [`uv`](https://astral.sh/uv):
 
 ```bash
 git clone https://github.com/alberto2005-coder/detector-ia.git
@@ -46,7 +59,7 @@ cd detector-ia
 uv sync --extra modelo
 ```
 
-El extra `modelo` instala `torch` y `transformers`; sin él la herramienta sigue funcionando con `--sin-modelo`, usando solo las señales estructurales. La primera ejecución descarga el modelo (~500 MB) en `cache_modelo/`, que está fuera del control de versiones. Las siguientes arrancan sin conexión.
+Dentro del repositorio los comandos del resto de la guía se ejecutan con `uv run detector-ia`.
 
 ### Uso
 
@@ -177,7 +190,20 @@ Each submission is split into blocks of ~1500 characters, and every block longer
 
 ### Install
 
-Requires Python 3.13 or newer; if you don't have `uv`, install it from [astral.sh/uv](https://astral.sh/uv).
+Requires Python 3.13 or newer.
+
+```bash
+pip install detector-ia            # structural signals, no neural model
+pip install "detector-ia[modelo]"  # with the neural model (torch + transformers)
+```
+
+The `modelo` extra installs `torch` and `transformers`; without it the tool still works with `--sin-modelo`, using only the structural signals. The first run downloads the model (~500 MB) into `cache_modelo/`, which is not tracked by git. Later runs start offline.
+
+Once installed, the command is `detector-ia`; check it with `detector-ia --version`.
+
+#### From source
+
+If you prefer working on the repository, clone and sync. This needs [`uv`](https://astral.sh/uv):
 
 ```bash
 git clone https://github.com/alberto2005-coder/detector-ia.git
@@ -185,7 +211,7 @@ cd detector-ia
 uv sync --extra modelo
 ```
 
-The `modelo` extra installs `torch` and `transformers`; without it the tool still works with `--sin-modelo`, using only the structural signals. The first run downloads the model (~500 MB) into `cache_modelo/`, which is not tracked by git. Later runs start offline.
+Inside the repository, the commands in the rest of this guide run as `uv run detector-ia`.
 
 ### Usage
 
