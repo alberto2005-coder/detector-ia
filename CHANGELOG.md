@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Se
 
 ## Español
 
+### [1.0.1] — 2026-11-18
+
+#### Cambiado
+
+- Metadatos de PyPI completados: mantenedor, enlaces (documentación, método, uso responsable, seguridad, autor y web), clasificadores y palabras clave.
+- README: insignias (PyPI, Python, CI, licencia), línea de autoría, enlaces a ejemplos y evaluación, y sección «Autor».
+
 ### [1.0.0] — 2026-11-17
 
 #### Añadido
@@ -75,6 +82,13 @@ Primera versión utilizable del detector.
 ---
 
 ## English
+
+### [1.0.1] — 2026-11-18
+
+#### Changed
+
+- PyPI metadata completed: maintainer, links (documentation, method, responsible use, security, author and website), classifiers and keywords.
+- README: badges (PyPI, Python, CI, licence), credit line, links to examples and evaluation, and an "Author" section.
 
 ### [1.0.0] — 2026-11-17
 

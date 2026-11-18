@@ -1,6 +1,6 @@
 [project]
 name = "detector-ia"
-version = "1.0.0"
+version = "1.0.1"
 description = "Detector de texto generado por IA y de copia entre entregas · AI-text and plagiarism detection for student submissions"
 keywords = [
     "ia",
@@ -13,21 +13,33 @@ keywords = [
     "docencia",
     "teaching",
     "csv",
+    "cli",
+    "jupyter",
+    "pdf",
+    "docx",
+    "similarity",
 ]
 license = "MIT"
 license-files = ["LICENSE"]
 readme = "README.md"
 authors = [{ name = "Alberto Ortiz Sánchez" }]
+maintainers = [{ name = "Alberto Ortiz Sánchez" }]
 requires-python = ">=3.13"
 classifiers = [
+    "License :: OSI Approved :: MIT License",
     "Development Status :: 4 - Beta",
     "Environment :: Console",
     "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
     "Natural Language :: Spanish",
+    "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3 :: Only",
     "Topic :: Education",
+    "Topic :: Text Processing :: Linguistic",
+    "Topic :: Utilities",
 ]
 dependencies = [
     "pandas>=3.1.1",
@@ -39,7 +51,14 @@ dependencies = [
 Homepage = "https://github.com/alberto2005-coder/detector-ia"
 Repository = "https://github.com/alberto2005-coder/detector-ia"
 Issues = "https://github.com/alberto2005-coder/detector-ia/issues"
+Documentation = "https://github.com/alberto2005-coder/detector-ia#readme"
 Changelog = "https://github.com/alberto2005-coder/detector-ia/blob/main/CHANGELOG.md"
+"Usage guide" = "https://github.com/alberto2005-coder/detector-ia/blob/main/docs/USAGE.md"
+"Method" = "https://github.com/alberto2005-coder/detector-ia/blob/main/docs/METODO.md"
+"Responsible use" = "https://github.com/alberto2005-coder/detector-ia/blob/main/docs/USO_RESPONSABLE.md"
+Security = "https://github.com/alberto2005-coder/detector-ia/blob/main/SECURITY.md"
+Author = "https://github.com/alberto2005-coder/"
+Website = "https://albertoortiz.is-a.dev/"
 
 [project.optional-dependencies]
 # Sin este extra la herramienta funciona con --sin-modelo, solo con las señales estructurales

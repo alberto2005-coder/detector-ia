@@ -1,6 +1,17 @@
 # Detector IA
 
+[![PyPI](https://img.shields.io/pypi/v/detector-ia?label=PyPI)](https://pypi.org/project/detector-ia/)
+[![Python](https://img.shields.io/badge/Python-3.13%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![CI](https://github.com/alberto2005-coder/detector-ia/actions/workflows/ci.yml/badge.svg)](https://github.com/alberto2005-coder/detector-ia/actions/workflows/ci.yml)
+[![MIT](https://img.shields.io/badge/Licencia-MIT-green)](https://github.com/alberto2005-coder/detector-ia/blob/main/LICENSE)
+
 [Español](#español) · [English](#english)
+
+> Desarrollado por **[Alberto Ortiz Sánchez](https://github.com/alberto2005-coder/)** · [albertoortiz.is-a.dev](https://albertoortiz.is-a.dev/) · [PyPI](https://pypi.org/project/detector-ia/) · [GitHub](https://github.com/alberto2005-coder/detector-ia)
+
+```bash
+pip install detector-ia && detector-ia --version
+```
 
 ---
 
@@ -16,13 +27,16 @@ Analiza cuadernos de Jupyter (`.ipynb`), PDF, Word (`.docx`), Markdown (`.md`) y
 
 Guías en español e inglés dentro de cada archivo:
 
-- [Uso y formatos](docs/USAGE.md): qué se extrae de cada formato y solución de problemas.
-- [Changelog](CHANGELOG.md): historial de cambios por versión.
-- [Seguridad](SECURITY.md): cómo reportar un problema y qué datos no compartir.
-- [Método y calibración](docs/METODO.md): de dónde salen los pesos y los umbrales, y cómo recalibrar.
-- [Uso responsable](docs/USO_RESPONSABLE.md): qué hacer con un caso marcado antes de hablar con el alumno.
-- [Contribuir](CONTRIBUTING.md): entorno, estructura del código y convención de commits.
-- [Índice de documentación](docs/README.md).
+- [Uso y formatos](https://github.com/alberto2005-coder/detector-ia/blob/main/docs/USAGE.md): qué se extrae de cada formato y solución de problemas.
+- [Changelog](https://github.com/alberto2005-coder/detector-ia/blob/main/CHANGELOG.md): historial de cambios por versión.
+- [Seguridad](https://github.com/alberto2005-coder/detector-ia/blob/main/SECURITY.md): cómo reportar un problema y qué datos no compartir.
+- [Método y calibración](https://github.com/alberto2005-coder/detector-ia/blob/main/docs/METODO.md): de dónde salen los pesos y los umbrales, y cómo recalibrar.
+- [Uso responsable](https://github.com/alberto2005-coder/detector-ia/blob/main/docs/USO_RESPONSABLE.md): qué hacer con un caso marcado antes de hablar con el alumno.
+- [Contribuir](https://github.com/alberto2005-coder/detector-ia/blob/main/CONTRIBUTING.md): entorno, estructura del código y convención de commits.
+- [Ejemplos](https://github.com/alberto2005-coder/detector-ia/blob/main/ejemplos/README.md): textos inventados para probar la herramienta.
+- [Evaluación](https://github.com/alberto2005-coder/detector-ia/blob/main/evaluacion/etiquetas.csv): corpus etiquetado y script de métricas ([`evaluar.py`](https://github.com/alberto2005-coder/detector-ia/blob/main/evaluacion/evaluar.py)).
+- [Reportar un error](https://github.com/alberto2005-coder/detector-ia/issues/new/choose) · [Código de conducta](https://github.com/alberto2005-coder/detector-ia/blob/main/CODE_OF_CONDUCT.md).
+- [Índice de documentación](https://github.com/alberto2005-coder/detector-ia/blob/main/docs/README.md).
 
 ### Cómo funciona
 
@@ -41,7 +55,7 @@ Además se calcula la **similitud de coseno** (bolsa de palabras) entre todas la
 Requiere Python 3.13 o superior.
 
 ```bash
-pip install detector-ia            # señales estructurales, sin modelo neuronal
+pip install detector-ia            # desde PyPI: señales estructurales, sin modelo neuronal
 pip install "detector-ia[modelo]"  # con el modelo neuronal (torch + transformers)
 ```
 
@@ -150,9 +164,18 @@ detector-ia/
 
 Las entregas de los alumnos y los reportes generados están excluidos de git (`.gitignore`), porque contienen trabajos reales y nombres de archivo. No los subas al repositorio ni compartas los CSV fuera del ámbito docente.
 
+### Autor
+
+Desarrollado por **Alberto Ortiz Sánchez**.
+
+- GitHub: <https://github.com/alberto2005-coder/>
+- Web personal: <https://albertoortiz.is-a.dev/>
+- PyPI: <https://pypi.org/project/detector-ia/>
+- Incidencias: <https://github.com/alberto2005-coder/detector-ia/issues>
+
 ### Licencia
 
-Distribuido bajo la licencia MIT. Consulta [LICENSE](LICENSE) para el texto completo.
+Distribuido bajo la licencia MIT. Consulta [LICENSE](https://github.com/alberto2005-coder/detector-ia/blob/main/LICENSE). © 2026 Alberto Ortiz Sánchez.
 
 ---
 
@@ -168,13 +191,16 @@ It analyses Jupyter notebooks (`.ipynb`), PDF, Word (`.docx`), Markdown (`.md`) 
 
 Guides in Spanish and English within each file:
 
-- [Usage and formats](docs/USAGE.md): what is extracted from each format and troubleshooting.
-- [Changelog](CHANGELOG.md): change history per version.
-- [Security](SECURITY.md): how to report a problem and which data never to share.
-- [Method and calibration](docs/METODO.md): where the weights and thresholds come from, and how to recalibrate.
-- [Responsible use](docs/USO_RESPONSABLE.md): what to do with a flagged case before talking to the student.
-- [Contributing](CONTRIBUTING.md): environment, code layout and commit convention.
-- [Documentation index](docs/README.md).
+- [Usage and formats](https://github.com/alberto2005-coder/detector-ia/blob/main/docs/USAGE.md): what is extracted from each format and troubleshooting.
+- [Changelog](https://github.com/alberto2005-coder/detector-ia/blob/main/CHANGELOG.md): change history per version.
+- [Security](https://github.com/alberto2005-coder/detector-ia/blob/main/SECURITY.md): how to report a problem and which data never to share.
+- [Method and calibration](https://github.com/alberto2005-coder/detector-ia/blob/main/docs/METODO.md): where the weights and thresholds come from, and how to recalibrate.
+- [Responsible use](https://github.com/alberto2005-coder/detector-ia/blob/main/docs/USO_RESPONSABLE.md): what to do with a flagged case before talking to the student.
+- [Contributing](https://github.com/alberto2005-coder/detector-ia/blob/main/CONTRIBUTING.md): environment, code layout and commit convention.
+- [Examples](https://github.com/alberto2005-coder/detector-ia/blob/main/ejemplos/README.md): invented texts for trying the tool.
+- [Evaluation](https://github.com/alberto2005-coder/detector-ia/blob/main/evaluacion/etiquetas.csv): labelled corpus and metrics script ([`evaluar.py`](https://github.com/alberto2005-coder/detector-ia/blob/main/evaluacion/evaluar.py)).
+- [Report a bug](https://github.com/alberto2005-coder/detector-ia/issues/new/choose) · [Code of conduct](https://github.com/alberto2005-coder/detector-ia/blob/main/CODE_OF_CONDUCT.md).
+- [Documentation index](https://github.com/alberto2005-coder/detector-ia/blob/main/docs/README.md).
 
 ### How it works
 
@@ -193,7 +219,7 @@ Each submission is split into blocks of ~1500 characters, and every block longer
 Requires Python 3.13 or newer.
 
 ```bash
-pip install detector-ia            # structural signals, no neural model
+pip install detector-ia            # from PyPI: structural signals, no neural model
 pip install "detector-ia[modelo]"  # with the neural model (torch + transformers)
 ```
 
@@ -302,6 +328,15 @@ detector-ia/
 
 Student submissions and generated reports are excluded from git (`.gitignore`), because they contain real work and file names. Do not push them to the repository or share the CSVs outside the classroom.
 
+### Author
+
+Developed by **Alberto Ortiz Sánchez**.
+
+- GitHub: <https://github.com/alberto2005-coder/>
+- Personal website: <https://albertoortiz.is-a.dev/>
+- PyPI: <https://pypi.org/project/detector-ia/>
+- Issues: <https://github.com/alberto2005-coder/detector-ia/issues>
+
 ### License
 
-Distributed under the MIT license. See [LICENSE](LICENSE) for the full text.
+Distributed under the MIT license. See [LICENSE](https://github.com/alberto2005-coder/detector-ia/blob/main/LICENSE). © 2026 Alberto Ortiz Sánchez.
