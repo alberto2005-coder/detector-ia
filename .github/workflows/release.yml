@@ -56,8 +56,7 @@ jobs:
           name: dist
           path: dist
 
-      - uses: astral-sh/setup-uv@v7
-
-      # Trusted Publishing: sin tokens, el token lo emite GitHub para PyPI
-      - name: uv publish
-        run: uv publish --trusted-publishing always --check-url https://pypi.org/simple/detector-ia/ dist/*
+      # Trusted Publishing: sin tokens. La acción genera y sube las atestaciones (procedencia)
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          attestations: true

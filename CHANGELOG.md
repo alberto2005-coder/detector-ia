@@ -9,6 +9,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Se
 
 ## Español
 
+### [1.0.2] — 2026-11-18
+
+#### Cambiado
+
+- La publicación en PyPI usa `pypa/gh-action-pypi-publish` con atestaciones, así que la ficha muestra la procedencia verificada del paquete.
+
 ### [1.0.1] — 2026-11-18
 
 #### Cambiado
@@ -82,6 +88,12 @@ Primera versión utilizable del detector.
 ---
 
 ## English
+
+### [1.0.2] — 2026-11-18
+
+#### Changed
+
+- PyPI publishing now uses `pypa/gh-action-pypi-publish` with attestations, so the project page shows the package's verified provenance.
 
 ### [1.0.1] — 2026-11-18
 
