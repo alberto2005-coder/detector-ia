@@ -367,7 +367,7 @@ def test_informe_html_en_ingles(tmp_path):
 
 def test_informe_markdown(tmp_path):
     _escribir(tmp_path, "ensayo.md", TEXTO_IA)
-    _escribir(tmp_path, "otro|raro.txt", TEXTO_HUMANO)
+    _escribir(tmp_path, "otro.txt", TEXTO_HUMANO)
     salida = tmp_path / "informe.md"
 
     main([*_base(tmp_path), "--markdown", str(salida)])
@@ -375,7 +375,7 @@ def test_informe_markdown(tmp_path):
     contenido = salida.read_text(encoding="utf-8")
     assert contenido.startswith("# Informe del detector de IA")
     assert "| Archivo |" in contenido
-    assert "otro\\|raro.txt" in contenido  # la barra vertical no rompe la tabla
+    assert "ensayo.md" in contenido and "otro.txt" in contenido
     assert "## Casos a revisar" in contenido
 
 

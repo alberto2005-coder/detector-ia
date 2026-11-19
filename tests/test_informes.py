@@ -93,3 +93,15 @@ def test_informe_html_de_una_entrega_con_error():
 
 def test_detalle_json_vacio_si_no_hay_detalle():
     assert informes.detalle_json(None) == {}
+
+
+def test_informe_markdown_escapa_la_barra_vertical_de_los_nombres():
+    # Se prueba aquí y no con un archivo real porque Windows no admite "|" en los nombres
+    fila = {
+        "Archivo": "otro|raro.txt", "Formato": ".TXT", "IA_Media (%)": 80, "IA_Pico_Max (%)": 90,
+        "Confianza": "Alta", "Similitud_Companero (%)": 0, "Coincide_Con": "Ninguno",
+        "Veredicto": "ALTO RIESGO IA", "Fragmento_Sospechoso": "a | b", "Error": "",
+    }
+    informe = informes.informe_markdown([fila], {}, {"version": "1"}, [], "es")
+    assert "otro\\|raro.txt" in informe
+    assert "otro|raro.txt" not in informe
