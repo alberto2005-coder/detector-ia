@@ -20,7 +20,7 @@ El orden de magnitud importa más que el decimal: si cambias un peso, cambia tam
 
 Están puestos a partir de la observación de tres grupos de textos: trabajos escritos a mano en clase, textos generados sin editar y textos generados y luego reescritos. El criterio fue que un trabajo humano no llegara a 45 de media, y que un texto generado sin tocar superara 58 de pico con holgura.
 
-Son heurísticos y **no** están validados con un corpus grande y representativo. Por eso el corte de "copia" (88 % de similitud) es deliberadamente alto: solo marca casos de texto casi idéntico.
+Son heurísticos y **no** están validados con un corpus grande y representativo. Por eso el corte de "copia" es deliberadamente alto (60 % de n-gramas compartidos o 88 % de coseno): solo marca casos de texto casi idéntico.
 
 ### Cómo comprobar o recalibrar
 
@@ -29,11 +29,54 @@ Hay un corpus etiquetado de ejemplo en `evaluacion/`:
 ```bash
 uv run python evaluacion/evaluar.py              # con modelo neuronal
 uv run python evaluacion/evaluar.py --sin-modelo # solo señales estructurales
+uv run python evaluacion/evaluar.py --sin-modelo --perplejidad  # con la señal experimental
 ```
 
-Imprime la puntuación de cada texto y, para los umbrales 45 y 58, precisión, recall, exactitud y número de falsos positivos y negativos.
+Ese corpus tiene **42 textos sintéticos** en siete categorías: IA sin editar, humano coloquial, humano formal, IA retocada a mano, IA pedida «como un estudiante», humano traducido con un traductor automático y texto mixto (humano con una conclusión pegada de una IA). Los escribió una persona con ayuda de un modelo, no son trabajos reales: sirve para detectar regresiones cuando tocas pesos o umbrales y para ver **en qué casos falla cada señal**, no para afirmar que el detector acierta un porcentaje concreto. Para calibrar de verdad hace falta un conjunto mucho mayor, con trabajos reales de varias materias, etiquetado por quien conoce los textos, y sin datos personales.
 
-Ese corpus tiene **12 textos inventados**: sirve para detectar regresiones cuando tocas pesos o umbrales, no para afirmar que el detector acierta un porcentaje concreto. Para calibrar de verdad hace falta un conjunto mucho mayor, variado en registros y materias, etiquetado por quien conoce los textos, y sin datos personales.
+El script imprime la puntuación de cada texto, un resumen por categoría, un barrido de umbrales de 30 a 80 y, con `--json`, todo en un formato que se puede guardar y comparar entre versiones. Los textos mixtos no entran en precisión ni recall porque no tienen una respuesta binaria correcta.
+
+#### Qué midió la 1.1.0 (solo señales estructurales)
+
+Resultado de `evaluar.py --sin-modelo` con el umbral de pico 45. El modelo neuronal y la perplejidad **no se midieron** (requieren descargar modelos); ejecútalos tú con el mismo script.
+
+| Categoría | Etiqueta | Textos | Pico medio | Marcados |
+| --- | --- | --- | --- | --- |
+| IA sin editar | ia | 6 | 53,3 | 5 de 6 |
+| IA retocada a mano | ia | 8 | 28,7 | 0 de 8 |
+| IA «como un estudiante» | ia | 6 | 25,4 | 0 de 6 |
+| Humano coloquial | humano | 6 | 18,8 | 0 de 6 |
+| Humano formal | humano | 8 | 27,6 | 0 de 8 |
+| Humano traducido | humano | 4 | 25,9 | 0 de 4 |
+| Mixto | mixto | 4 | 47,8 | 2 de 4 |
+
+Lectura: con el umbral 45 no hay falsos positivos, pero solo se detectan 5 de las 20 muestras de IA (recall 0,25), todas sin editar. La IA retocada a mano o escrita «como un estudiante» se solapa con el humano formal (picos de 20 a 39 la IA retocada o «de estudiante», de 22 a 36 el humano formal), así que **ningún umbral de pico separa ambos grupos con las señales estructurales**: bajarlo para cazar más IA crearía falsos positivos con trabajos humanos formales o traducidos. Por eso los umbrales no se han tocado. Las señales que sí pueden aportar en esos casos son el modelo neuronal y la perplejidad, y falta medirlas.
+
+### Plagio por n-gramas
+
+La similitud de coseno entre bolsas de palabras da valores muy altos a dos trabajos que solo tratan el mismo tema. Desde la 1.1.0 la copia se mide con el orden de las palabras:
+
+1. Cada entrega se parte en n-gramas de 5 palabras (8 *tokens* en código), sin acentos ni mayúsculas.
+2. De ellos se eligen las huellas con *winnowing* (ventana de 4): en cada ventana se guarda el hash más pequeño. Así la selección es estable aunque se inserten o quiten palabras.
+3. La similitud es el porcentaje de huellas de la entrega **más pequeña** que aparecen en la otra. Detecta, por tanto, que un trabajo corto esté contenido en uno largo.
+4. En código, los nombres de variables, los números y las cadenas se sustituyen por marcadores (`ID`, `NUM`, `STR`) antes de partir en n-gramas, de modo que renombrar variables no esconde la copia.
+5. Con `--base` se restan los n-gramas del enunciado o la plantilla, tanto de las huellas como de la bolsa de palabras del coseno.
+
+Se marca como posible copia con **≥ 60 %** de n-gramas o **> 88 %** de coseno, y se muestra la coincidencia a partir del 40 % de n-gramas (o 75 % de coseno). Son umbrales razonados con textos de ejemplo, no calibrados con un corpus real. Limitaciones conocidas: dos trabajos que citan el mismo texto largo parecerán copiados, y el código muy corto o muy estándar (por ejemplo, cargar un CSV) comparte n-gramas sin que haya copia; para eso sirve `--base`.
+
+### Señal de perplejidad (experimental)
+
+`--perplejidad` añade una cuarta señal inspirada en [Binoculars](https://arxiv.org/abs/2401.12070) (Hans et al., 2024): la perplejidad del texto bajo un modelo de lenguaje dividida entre la entropía cruzada entre dos modelos emparentados. Un valor bajo indica texto muy predecible. La pareja por defecto es `Qwen/Qwen2.5-0.5B` y `Qwen/Qwen2.5-0.5B-Instruct`, pequeña y multilingüe. Con la señal activada los pesos pasan a 40 % huella, 20 % uniformidad, 15 % red neuronal y 25 % perplejidad.
+
+Es **experimental**: el cálculo está probado con datos sintéticos, pero los límites que convierten la puntuación en un porcentaje (`BINO_ALTO` = 0,75 y `BINO_BAJO` = 1,00 en `perplejidad.py`) son una elección razonable, no un valor calibrado para español con esa pareja de modelos. Los autores del método advierten además de que funciona peor fuera del inglés. Antes de usarla para algo, ejecuta `evaluar.py --perplejidad` y mira si separa tus categorías.
+
+### Confianza y avisos
+
+La columna `Confianza` (`Alta`, `Media`, `Baja`) **no es la probabilidad de acertar**: indica cuánta base tiene el análisis. Baja si se puntuó menos de 2 bloques o si un resultado alto viene solo de la uniformidad de las frases (huella < 20 y ningún modelo lo apoya); Media si hay bloques muy dispares (≥ 35 puntos de diferencia, posible texto mixto) o más de un 25 % del texto entre comillas; Alta en el resto.
+
+### Sesgo con quien no escribe en su lengua
+
+Los detectores fallan más con textos de personas que escriben en una lengua que no es la suya: un estudio de Stanford (Liang et al., 2023) encontró que los detectores marcaban como IA más del 61 % de los ensayos TOEFL de hablantes no nativos de inglés, y un estudio con textos en español concluyó que ninguna herramienta evaluada era fiable con textos híbridos. Las razones son parecidas a las de los textos traducidos: vocabulario más acotado, frases más regulares y menos variación. Este detector no está exento. Por eso cada informe lleva un aviso visible y la confianza baja cuando el resultado descansa solo en la uniformidad.
 
 ### Qué acierta y qué no
 
@@ -71,7 +114,7 @@ The order of magnitude matters more than the decimal: change a weight and you al
 
 They were set from three groups of texts: work written by hand in class, generated text with no edits, and generated text later rewritten. The rule was that human work should not reach a mean of 45, and untouched generated text should clearly exceed a peak of 58.
 
-They are heuristics and are **not** validated against a large, representative corpus. That is why the "copying" cut-off (88 % similarity) is deliberately high: it only flags nearly identical text.
+They are heuristics and are **not** validated against a large, representative corpus. That is why the "copying" cut-off is deliberately high (60 % shared n-grams or 88 % cosine): it only flags nearly identical text.
 
 ### How to check or recalibrate
 
@@ -80,11 +123,54 @@ There is a small labelled corpus in `evaluacion/`:
 ```bash
 uv run python evaluacion/evaluar.py              # with the neural model
 uv run python evaluacion/evaluar.py --sin-modelo # structural signals only
+uv run python evaluacion/evaluar.py --sin-modelo --perplejidad  # with the experimental signal
 ```
 
-It prints each text's score and, for the 45 and 58 thresholds, precision, recall, accuracy and the number of false positives and negatives.
+That corpus holds **42 synthetic texts** in seven categories: unedited AI, colloquial human, formal human, AI edited by hand, AI prompted to "write like a student", human text run through a machine translator, and mixed text (human with an AI conclusion pasted in). They were written by a person with the help of a model, and are not real student work: they catch regressions when you touch weights or thresholds and show **where each signal fails**, they do not prove the detector is right a given share of the time. Real calibration needs a much larger set of real work from several subjects, labelled by someone who knows the texts, with no personal data.
 
-That corpus holds **12 invented texts**: it catches regressions when you touch weights or thresholds, it does not prove the detector is right a given share of the time. Real calibration needs a much larger set, varied in registers and subjects, labelled by someone who knows the texts, with no personal data.
+The script prints each text's score, a per-category summary, a threshold sweep from 30 to 80 and, with `--json`, everything in a format you can save and compare between versions. Mixed texts are excluded from precision and recall because they have no correct binary answer.
+
+#### What 1.1.0 measured (structural signals only)
+
+Result of `evaluar.py --sin-modelo` at the peak threshold of 45. The neural model and the perplexity signal **were not measured** (they need model downloads); run them yourself with the same script.
+
+| Category | Label | Texts | Mean peak | Flagged |
+| --- | --- | --- | --- | --- |
+| Unedited AI | ia | 6 | 53.3 | 5 of 6 |
+| AI edited by hand | ia | 8 | 28.7 | 0 of 8 |
+| AI "like a student" | ia | 6 | 25.4 | 0 of 6 |
+| Colloquial human | humano | 6 | 18.8 | 0 of 6 |
+| Formal human | humano | 8 | 27.6 | 0 of 8 |
+| Translated human | humano | 4 | 25.9 | 0 of 4 |
+| Mixed | mixto | 4 | 47.8 | 2 of 4 |
+
+Reading: at threshold 45 there are no false positives, but only 5 of the 20 AI samples are caught (recall 0.25), all of them unedited. AI edited by hand or written "like a student" overlaps with formal human writing (peaks of 20 to 39 for edited or "student" AI, 22 to 36 for formal human), so **no peak threshold separates the two groups with the structural signals**: lowering it to catch more AI would create false positives on formal or translated human work. That is why the thresholds were not touched. The signals that could help in those cases are the neural model and perplexity, and they still need measuring.
+
+### N-gram plagiarism
+
+Cosine similarity between bags of words gives very high values to two pieces of work that merely cover the same topic. Since 1.1.0, copying is measured with word order:
+
+1. Each submission is split into 5-word n-grams (8 tokens for code), without accents or capitals.
+2. Fingerprints are chosen from them with *winnowing* (window of 4): the smallest hash in each window is kept. The selection stays stable when words are inserted or removed.
+3. Similarity is the share of fingerprints of the **smaller** submission found in the other, so a short piece of work contained in a long one is detected.
+4. In code, variable names, numbers and strings are replaced by markers (`ID`, `NUM`, `STR`) before splitting into n-grams, so renaming variables does not hide the copy.
+5. With `--base`, the n-grams of the brief or template are subtracted, both from the fingerprints and from the bag of words used by the cosine.
+
+A pair is flagged as possible copying at **≥ 60 %** n-grams or **> 88 %** cosine, and the match is shown from 40 % n-grams (or 75 % cosine). These thresholds were reasoned from example texts, not calibrated on a real corpus. Known limits: two pieces of work quoting the same long text will look copied, and very short or very standard code (such as loading a CSV) shares n-grams without any copying; `--base` is there for that.
+
+### Perplexity signal (experimental)
+
+`--perplejidad` adds a fourth signal inspired by [Binoculars](https://arxiv.org/abs/2401.12070) (Hans et al., 2024): the perplexity of the text under one language model divided by the cross-entropy between two related models. A low value means very predictable text. The default pair is `Qwen/Qwen2.5-0.5B` and `Qwen/Qwen2.5-0.5B-Instruct`, small and multilingual. With the signal on, the weights become 40 % fingerprint, 20 % uniformity, 15 % neural network and 25 % perplexity.
+
+It is **experimental**: the calculation is tested with synthetic data, but the limits that turn the score into a percentage (`BINO_ALTO` = 0.75 and `BINO_BAJO` = 1.00 in `perplejidad.py`) are a reasonable choice, not a value calibrated for Spanish with that model pair. The method's authors also warn that it works worse outside English. Before relying on it, run `evaluar.py --perplejidad` and see whether it separates your categories.
+
+### Confidence and notices
+
+The `Confianza` column (`Alta`, `Media`, `Baja`) is **not the probability of being right**: it says how much basis the analysis has. Low when fewer than 2 blocks were scored or when a high result comes only from sentence uniformity (fingerprint < 20 and no model backs it); Medium when blocks disagree sharply (≥ 35 points apart, possibly mixed text) or more than 25 % of the text is quoted; High otherwise.
+
+### Bias against people not writing in their first language
+
+Detectors fail more often on text by people writing in a language that is not their first: a Stanford study (Liang et al., 2023) found detectors flagged more than 61 % of TOEFL essays by non-native English speakers as AI, and a study on Spanish texts concluded that none of the tools it evaluated was reliable with hybrid texts. The reasons resemble those for translated text: a narrower vocabulary, more regular sentences and less variation. This detector is not exempt. That is why every report carries a visible notice and why confidence drops when a result rests only on uniformity.
 
 ### What it gets right and wrong
 

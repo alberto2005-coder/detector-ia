@@ -32,6 +32,13 @@ Analizando 4 entregas (Jupyter, PDF, Word, Markdown, TXT)...
 ✔ [.MD] ensayo.md -> IA Pico: 88.41% | Similitud: 57.43% (ALTO RIESGO IA)
 ```
 
+### Informes y plantilla base
+
+- `--html informe.html` genera una página autocontenida con el resumen, el detalle por entrega y los pasajes copiados. Ábrela con el navegador, sin conexión. Contiene trabajos reales: no la subas a ningún sitio público.
+- `--markdown informe.md` genera lo mismo en texto, útil para pegarlo en una incidencia o en el resumen de una acción de GitHub.
+- Si todos los alumnos parten de un enunciado o de un cuaderno con celdas ya escritas, pásalo con `--base enunciado.ipynb` (archivo o carpeta). Lo que coincida con él no cuenta como copia.
+- Con `--traduccion` (necesita `pip install "detector-ia[semantica]"`) se avisa si una entrega parece traducción de otra escrita en otro idioma. Es solo un aviso.
+
 ### Solución de problemas
 
 **Tarda mucho la primera vez.** Descarga el modelo (~500 MB) en `cache_modelo/`. Las siguientes ejecuciones son rápidas y funcionan sin conexión.
@@ -74,6 +81,13 @@ Cargando motor híbrido (Neuronal + Huella Estructural Español + Anti-Plagio)..
 Analizando 4 entregas (Jupyter, PDF, Word, Markdown, TXT)...
 ✔ [.MD] ensayo.md -> IA Pico: 88.41% | Similitud: 57.43% (ALTO RIESGO IA)
 ```
+
+### Reports and base template
+
+- `--html report.html` writes a self-contained page with the summary, the detail per submission and the copied passages. Open it in a browser, offline. It contains real work: do not upload it anywhere public.
+- `--markdown report.md` writes the same as text, handy to paste into an issue or into a GitHub Actions summary.
+- If every student starts from a brief or from a notebook with cells already written, pass it with `--base brief.ipynb` (file or folder). What matches it does not count as copying.
+- With `--traduccion` (needs `pip install "detector-ia[semantica]"`) you get a notice when a submission looks like a translation of one written in another language. It is only a notice.
 
 ### Troubleshooting
 

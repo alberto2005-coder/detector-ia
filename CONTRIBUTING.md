@@ -22,9 +22,14 @@ detector-ia/
 ├── src/detector_ia/
 │   ├── main.py          # CLI, umbrales, veredictos y generación del CSV
 │   ├── extractores.py   # Lectura de cada formato
-│   └── motores.py       # Modelo neuronal, huella estructural y similitud
+│   ├── motores.py       # Modelo neuronal, huella estructural y puntuación por bloques
+│   ├── perplejidad.py   # Señal tipo Binoculars (opcional, experimental)
+│   ├── similitud.py     # N-gramas con winnowing, fragmentos y plantilla base
+│   ├── semantica.py     # Plagio traducido por significado (opcional)
+│   ├── confianza.py     # Nivel de confianza y avisos
+│   └── informes.py      # Informes HTML y Markdown
 ├── tests/               # Pruebas con detector falso (uv run pytest)
-├── docs/                # Índice, método, uso responsable y formatos
+├── docs/                # Índice, método, uso responsable, CI y formatos
 ├── ejemplos/            # Textos inventados de prueba
 ├── evaluacion/          # Corpus etiquetado y script de métricas
 ├── scripts/             # Notas de release desde el CHANGELOG
@@ -45,7 +50,7 @@ detector-ia/
 ### Ideas para contribuir
 
 - **Nuevo formato de entrada**: añade un `_extraer_*` en `extractores.py` y engánchalo en `procesar_archivo`. Registra también la extensión en `EXTENSIONES_VALIDAS` de `main.py` y añade la dependencia con `uv add`.
-- **Afinar el detector**: los patrones de la huella española están en `_huella_llm_espanol` y los pesos en `evaluar_texto`, ambos en `motores.py`. Si cambias pesos o umbrales, explica en el commit con qué textos lo has comprobado.
+- **Afinar el detector**: los patrones de la huella española están en `_huella_llm_espanol` y los pesos en `PESOS_*` y `evaluar_detalle`, ambos en `motores.py`. Si cambias pesos o umbrales, explica en el commit con qué textos lo has comprobado.
 - **Otro idioma**: la huella estructural es específica de español; un idioma nuevo requiere su propia función de patrones, no solo cambiar los pesos.
 
 ### Pruebas
@@ -70,7 +75,7 @@ uv publish --dry-run dist/*
 ```
 
 3. Crea el tag y súbelo: `git tag v0.x.y && git push origin v0.x.y`. Ese push lanza la release de GitHub con las notas extraídas del CHANGELOG.
-4. Para PyPI, configura **Trusted Publishing** en el proyecto y publica con `uv publish`. Nunca commitees tokens: no hay ningún secreto en el repositorio.
+4. El workflow `release.yml` publica en PyPI con **Trusted Publishing** y atestaciones de procedencia (`pypa/gh-action-pypi-publish`), así que no hace falta ningún token. Nunca commitees tokens: no hay ningún secreto en el repositorio.
 
 ### Commits
 
@@ -104,9 +109,14 @@ detector-ia/
 ├── src/detector_ia/
 │   ├── main.py          # CLI, thresholds, verdicts and CSV output
 │   ├── extractores.py   # One reader per format
-│   └── motores.py       # Neural model, structural fingerprint and similarity
+│   ├── motores.py       # Neural model, structural fingerprint and per-block scoring
+│   ├── perplejidad.py   # Binoculars-style signal (optional, experimental)
+│   ├── similitud.py     # N-grams with winnowing, passages and base template
+│   ├── semantica.py     # Translated plagiarism by meaning (optional)
+│   ├── confianza.py     # Confidence level and notices
+│   └── informes.py      # HTML and Markdown reports
 ├── tests/               # Tests with a fake detector (uv run pytest)
-├── docs/                # Index, method, responsible use and formats
+├── docs/                # Index, method, responsible use, CI and formats
 ├── ejemplos/            # Invented test texts
 ├── evaluacion/          # Labelled corpus and metrics script
 ├── scripts/             # Release notes from the CHANGELOG
@@ -127,7 +137,7 @@ detector-ia/
 ### Good places to help
 
 - **New input format**: add an `_extraer_*` function in `extractores.py` and hook it into `procesar_archivo`. Register the extension in `EXTENSIONES_VALIDAS` in `main.py` and add the dependency with `uv add`.
-- **Tuning the detector**: Spanish fingerprint patterns live in `_huella_llm_espanol`, weights in `evaluar_texto`, both in `motores.py`. When changing weights or thresholds, say in the commit which texts you checked them against.
+- **Tuning the detector**: Spanish fingerprint patterns live in `_huella_llm_espanol`, weights in `PESOS_*` and `evaluar_detalle`, both in `motores.py`. When changing weights or thresholds, say in the commit which texts you checked them against.
 - **Another language**: the structural fingerprint is Spanish-specific; a new language needs its own pattern function, not just different weights.
 
 ### Testing
@@ -152,7 +162,7 @@ uv publish --dry-run dist/*
 ```
 
 3. Tag and push: `git tag v0.x.y && git push origin v0.x.y`. That push triggers the GitHub release with notes taken from the CHANGELOG.
-4. For PyPI, set up **Trusted Publishing** on the project and publish with `uv publish`. Never commit tokens: the repository holds no secrets.
+4. The `release.yml` workflow publishes to PyPI with **Trusted Publishing** and provenance attestations (`pypa/gh-action-pypi-publish`), so no token is needed. Never commit tokens: the repository holds no secrets.
 
 ### Commits
 

@@ -21,6 +21,7 @@ Requiere Python 3.13 o superior. El extra `modelo` añade `torch` y `transformer
 | [Uso y formatos](USAGE.md) | Qué se extrae de cada formato y solución de problemas |
 | [Método y calibración](METODO.md) | De dónde salen los pesos y los umbrales, y cómo revisarlos |
 | [Uso responsable](USO_RESPONSABLE.md) | Qué hacer con un caso marcado antes de actuar |
+| [Integración continua](CI.md) | Usar `--fail-on` y los informes HTML/Markdown en GitHub Actions |
 | [Changelog](../CHANGELOG.md) | Historial de cambios por versión |
 | [Seguridad](../SECURITY.md) | Cómo reportar un problema y qué datos no compartir |
 | [Contribuir](../CONTRIBUTING.md) | Entorno, estructura del código y convención de commits |
@@ -46,6 +47,7 @@ Requires Python 3.13 or newer. The `modelo` extra adds `torch` and `transformers
 | [Usage and formats](USAGE.md) | What is extracted from each format and troubleshooting |
 | [Method and calibration](METODO.md) | Where the weights and thresholds come from, and how to review them |
 | [Responsible use](USO_RESPONSABLE.md) | What to do with a flagged case before acting |
+| [Continuous integration](CI.md) | Using `--fail-on` and the HTML/Markdown reports in GitHub Actions |
 | [Changelog](../CHANGELOG.md) | Change history per version |
 | [Security](../SECURITY.md) | How to report an issue and which data never to share |
 | [Contributing](../CONTRIBUTING.md) | Environment, code layout and commit convention |

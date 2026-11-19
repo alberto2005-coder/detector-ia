@@ -29,6 +29,7 @@ Guías en español e inglés dentro de cada archivo:
 
 - [Uso y formatos](https://github.com/alberto2005-coder/detector-ia/blob/main/docs/USAGE.md): qué se extrae de cada formato y solución de problemas.
 - [Changelog](https://github.com/alberto2005-coder/detector-ia/blob/main/CHANGELOG.md): historial de cambios por versión.
+- [Integración continua](https://github.com/alberto2005-coder/detector-ia/blob/main/docs/CI.md): usar `--fail-on` y los informes en GitHub Actions.
 - [Seguridad](https://github.com/alberto2005-coder/detector-ia/blob/main/SECURITY.md): cómo reportar un problema y qué datos no compartir.
 - [Método y calibración](https://github.com/alberto2005-coder/detector-ia/blob/main/docs/METODO.md): de dónde salen los pesos y los umbrales, y cómo recalibrar.
 - [Uso responsable](https://github.com/alberto2005-coder/detector-ia/blob/main/docs/USO_RESPONSABLE.md): qué hacer con un caso marcado antes de hablar con el alumno.
@@ -48,7 +49,19 @@ Cada entrega se parte en bloques de ~1500 caracteres y cada bloque de más de 30
 | Uniformidad estadística | 30 % | Baja variación en la longitud de las frases, típica de texto generado |
 | Red neuronal | 20 % | [fakespot-ai/roberta-base-ai-text-detection-v1](https://huggingface.co/fakespot-ai/roberta-base-ai-text-detection-v1) |
 
-Además se calcula la **similitud de coseno** (bolsa de palabras) entre todas las entregas: en los cuadernos se compara el código (o el texto, si el cuaderno no tiene código) y en el resto el texto redactado. Un mismo trabajo entregado en dos formatos (por ejemplo PDF y TXT) no se cuenta como copia.
+Opcionalmente (`--perplejidad`, **experimental**) se añade una cuarta señal tipo [Binoculars](https://arxiv.org/abs/2401.12070): la perplejidad del texto bajo dos modelos de lenguaje emparentados. No necesita entrenar con ejemplos de IA, pero sus límites no están calibrados para español: mídela con `evaluacion/evaluar.py --perplejidad` antes de fiarte.
+
+Cada resultado lleva una **confianza** (`Alta`, `Media` o `Baja`) y **avisos** cuando hay poca base: texto corto, bloques que se contradicen (posible texto mixto), puntuación que viene solo de la uniformidad o muchas citas. La confianza no es la probabilidad de acertar; indica cuánto se puede fiar uno del número.
+
+#### Plagio entre entregas
+
+Se compara el *orden* de las palabras, no solo el vocabulario: cada entrega se parte en n-gramas y se seleccionan huellas con *winnowing* (la idea de MOSS). La similitud es el porcentaje de huellas de la entrega más pequeña que aparecen en la otra, así que detecta también la copia parcial y no se deja engañar por trabajos que solo hablan del mismo tema. En los cuadernos se normaliza el código (nombres de variables, números y cadenas), de modo que renombrar variables no esconde la copia. El informe muestra los **pasajes coincidentes** de las dos entregas. El coseno clásico (bolsa de palabras) se sigue calculando como segunda opinión, en la columna `Similitud_Coseno (%)`.
+
+Con `--base` se indica el enunciado o la plantilla que reciben todos los alumnos, para que lo compartido no cuente como copia. Con `--traduccion` (extra `semantica`) se buscan frases con el mismo significado entre entregas en español e inglés; solo genera un aviso, nunca cambia el veredicto. Un mismo trabajo entregado en dos formatos (por ejemplo PDF y TXT) no se cuenta como copia.
+
+#### Qué no hace bien
+
+Con las señales estructurales, el texto generado **sin editar** se detecta mucho mejor que el retocado a mano o el escrito «como un estudiante»; y los textos muy formales, traducidos o de quien escribe en una lengua que no es la suya pueden dar falsos positivos. El detalle y las cifras del corpus de pruebas están en [Método y calibración](https://github.com/alberto2005-coder/detector-ia/blob/main/docs/METODO.md).
 
 ### Instalación
 
@@ -57,6 +70,7 @@ Requiere Python 3.13 o superior.
 ```bash
 pip install detector-ia            # desde PyPI: señales estructurales, sin modelo neuronal
 pip install "detector-ia[modelo]"  # con el modelo neuronal (torch + transformers)
+pip install "detector-ia[semantica]"  # solo para --traduccion (sentence-transformers)
 ```
 
 El extra `modelo` instala `torch` y `transformers`; sin él la herramienta sigue funcionando con `--sin-modelo`, usando solo las señales estructurales. La primera ejecución descarga el modelo (~500 MB) en `cache_modelo/`, que está fuera del control de versiones. Las siguientes arrancan sin conexión.
@@ -96,6 +110,8 @@ uv run detector-ia --carpeta entregas --salida reportes/marzo.csv
 uv run detector-ia -c ejemplos/misma_entrega.md --sin-modelo   # un solo archivo
 uv run detector-ia --folder entregas --output reporte.csv --lang en
 uv run detector-ia --modelo fakespot-ai/roberta-base-ai-text-detection-v1
+uv run detector-ia -c entregas --html informe.html --markdown informe.md   # informes para leer
+uv run detector-ia -c entregas --base enunciado.ipynb                      # sin contar la plantilla
 ```
 
 También funciona sin `uv`, con el entorno activado:
@@ -112,7 +128,12 @@ python -m detector_ia --carpeta revision_ia
 | `-s`, `--salida`, `--output` | `reporte_profesional_ia.csv` | Ruta del reporte generado |
 | `-m`, `--modelo`, `--model` | RoBERTa de detección de IA | Modelo de Hugging Face a usar |
 | `--sin-modelo`, `--no-model` | desactivado | Analiza solo con las señales estructurales, sin descargar el modelo |
-| `--json` | desactivado | Escribe el resultado en JSON por la salida estándar y el progreso por la de errores |
+| `--html RUTA` | — | Guarda además un informe HTML autocontenido (sin conexión, con marcas por frase y pasajes coincidentes) |
+| `--markdown RUTA`, `--md` | — | Guarda además un informe en Markdown |
+| `--base RUTA` | — | Enunciado o plantilla (archivo o carpeta): lo que coincida con ella no cuenta como copia |
+| `--perplejidad`, `--perplexity` | desactivado | Añade la señal de perplejidad tipo Binoculars (experimental; requiere el extra `modelo`) |
+| `--traduccion`, `--translation` | desactivado | Busca plagio traducido entre español e inglés (requiere el extra `semantica`) |
+| `--json` | desactivado | Escribe el resultado en JSON por la salida estándar (con el detalle de cada bloque) y el progreso por la de errores |
 | `--fail-on` | `ninguno` | Devuelve código de salida 1 si el reporte alcanza `error`, `alto`/`high` o `sospechoso`/`suspicious` (también vale `none`) |
 | `--lang`, `--idioma` | `es` | Idioma de los mensajes de consola (`es`/`en`); el CSV no cambia |
 | `-V`, `--version` | — | Muestra la versión instalada y sale |
@@ -126,12 +147,17 @@ El CSV se guarda en UTF-8 con BOM y separador `;` para que abra directamente en 
 - **Archivo / Formato**: nombre y extensión de la entrega.
 - **IA_Media (%)**: media de la puntuación híbrida de los bloques evaluados.
 - **IA_Pico_Max (%)**: bloque con la puntuación más alta, el que más se parece a texto de IA.
-- **Similitud_Companero (%)** y **Coincide_Con**: entrega más parecida y su nombre si supera el 75 %.
+- **Similitud_Companero (%)** y **Coincide_Con**: similitud por n-gramas con la entrega más parecida y su nombre si llega al 40 % (o si el coseno supera el 75 %). *Desde la 1.1.0 esta columna ya no es el coseno; el coseno está en `Similitud_Coseno (%)`.*
 - **Veredicto**: `ALTO RIESGO IA`, `REVISAR COPIA ENTRE ALUMNOS`, `Sospechoso (Revisar)`, `Normal` o `Poco texto`.
 - **Fragmento_Sospechoso**: el bloque con mayor puntuación, para leerlo en contexto.
 - **Error**: vacía salvo que el archivo no se pudiera leer o puntuar; en ese caso el veredicto es `Error` y aquí aparece el motivo, sin detener el resto del lote.
+- Columnas añadidas en la 1.1.0, al final para no mover las anteriores: **Similitud_Coseno (%)**, **Confianza** (`Alta`/`Media`/`Baja`), **Avisos**, **Fragmento_Coincidente** (el pasaje más largo que comparte con `Coincide_Con`) y **Similitud_Traducida (%)** (solo con `--traduccion`).
 
-Umbrales actuales (en `src/detector_ia/main.py`): pico ≥ 58 % o media ≥ 45 % es alto riesgo; pico ≥ 45 % o media ≥ 35 % es sospechoso; similitud > 88 % es posible copia.
+Umbrales actuales (en `src/detector_ia/main.py`): pico ≥ 58 % o media ≥ 45 % es alto riesgo; pico ≥ 45 % o media ≥ 35 % es sospechoso; similitud por n-gramas ≥ 60 % o coseno > 88 % es posible copia.
+
+#### Informe HTML
+
+`--html informe.html` genera una sola página que se abre sin conexión (no carga nada de internet): resumen por veredicto, tabla que se ordena y se filtra, puntuación de cada bloque, los rasgos que suben o bajan la puntuación marcados dentro del texto, los pasajes copiados lado a lado y los pares de entregas más parecidos. El texto de los alumnos se escapa, así que no puede ejecutar nada. Como contiene trabajos reales, trátalo igual que el CSV.
 
 ### Estructura
 
@@ -140,7 +166,12 @@ detector-ia/
 ├── src/detector_ia/
 │   ├── main.py          # CLI, umbrales y generación del reporte
 │   ├── extractores.py   # Lectura de .ipynb, .pdf, .docx, .txt y .md
-│   └── motores.py       # Modelo neuronal, huella estructural y similitud
+│   ├── motores.py       # Modelo neuronal, huella estructural y puntuación por bloques
+│   ├── perplejidad.py   # Señal tipo Binoculars (opcional, experimental)
+│   ├── similitud.py     # N-gramas con winnowing, fragmentos copiados y plantilla base
+│   ├── semantica.py     # Plagio traducido por significado (opcional)
+│   ├── confianza.py     # Nivel de confianza y avisos
+│   └── informes.py      # Informes HTML y Markdown
 ├── tests/               # Pruebas con un detector falso, sin descargar el modelo
 ├── docs/                # Índice, método, uso responsable y formatos
 ├── ejemplos/            # Textos inventados para probar
@@ -193,6 +224,7 @@ Guides in Spanish and English within each file:
 
 - [Usage and formats](https://github.com/alberto2005-coder/detector-ia/blob/main/docs/USAGE.md): what is extracted from each format and troubleshooting.
 - [Changelog](https://github.com/alberto2005-coder/detector-ia/blob/main/CHANGELOG.md): change history per version.
+- [Continuous integration](https://github.com/alberto2005-coder/detector-ia/blob/main/docs/CI.md): using `--fail-on` and the reports in GitHub Actions.
 - [Security](https://github.com/alberto2005-coder/detector-ia/blob/main/SECURITY.md): how to report a problem and which data never to share.
 - [Method and calibration](https://github.com/alberto2005-coder/detector-ia/blob/main/docs/METODO.md): where the weights and thresholds come from, and how to recalibrate.
 - [Responsible use](https://github.com/alberto2005-coder/detector-ia/blob/main/docs/USO_RESPONSABLE.md): what to do with a flagged case before talking to the student.
@@ -212,7 +244,19 @@ Each submission is split into blocks of ~1500 characters, and every block longer
 | Statistical uniformity | 30 % | Low variation in sentence length, typical of generated text |
 | Neural network | 20 % | [fakespot-ai/roberta-base-ai-text-detection-v1](https://huggingface.co/fakespot-ai/roberta-base-ai-text-detection-v1) |
 
-**Cosine similarity** (bag of words) is also computed between all submissions: notebooks are compared by code (or by their text, when they have no code), everything else by written text. The same assignment submitted in two formats (say PDF and TXT) is not counted as copying.
+Optionally (`--perplejidad`, **experimental**) a fourth signal in the style of [Binoculars](https://arxiv.org/abs/2401.12070) is added: the perplexity of the text under two related language models. It needs no training on AI examples, but its limits are not calibrated for Spanish: measure it with `evaluacion/evaluar.py --perplejidad` before trusting it.
+
+Every result carries a **confidence** (`Alta`, `Media` or `Baja`) and **notices** when the basis is thin: short text, blocks that disagree (possibly mixed text), a score that comes only from uniformity, or many quotations. Confidence is not the probability of being right; it tells you how far the number can be trusted.
+
+#### Plagiarism between submissions
+
+The *order* of the words is compared, not just the vocabulary: every submission is split into n-grams and fingerprints are chosen with *winnowing* (the idea behind MOSS). Similarity is the share of fingerprints of the smaller submission found in the other, so it also catches partial copying and is not fooled by pieces of work that merely cover the same topic. In notebooks the code is normalised (variable names, numbers and strings), so renaming variables does not hide the copy. The report shows the **shared passages** from both submissions. The classic cosine (bag of words) is still computed as a second opinion, in the `Similitud_Coseno (%)` column.
+
+`--base` takes the assignment brief or template every student receives, so what is shared does not count as copying. `--traduccion` (the `semantica` extra) looks for sentences with the same meaning across Spanish and English submissions; it only raises a notice and never changes the verdict. The same assignment submitted in two formats (say PDF and TXT) is not counted as copying.
+
+#### What it does not do well
+
+With the structural signals, **unedited** generated text is detected far better than text edited by hand or written "like a student"; and very formal or translated text, or text by people not writing in their first language, can produce false positives. The details and the numbers from the test corpus are in [Method and calibration](https://github.com/alberto2005-coder/detector-ia/blob/main/docs/METODO.md).
 
 ### Install
 
@@ -221,6 +265,7 @@ Requires Python 3.13 or newer.
 ```bash
 pip install detector-ia            # from PyPI: structural signals, no neural model
 pip install "detector-ia[modelo]"  # with the neural model (torch + transformers)
+pip install "detector-ia[semantica]"  # only for --traduccion (sentence-transformers)
 ```
 
 The `modelo` extra installs `torch` and `transformers`; without it the tool still works with `--sin-modelo`, using only the structural signals. The first run downloads the model (~500 MB) into `cache_modelo/`, which is not tracked by git. Later runs start offline.
@@ -260,6 +305,8 @@ uv run detector-ia --carpeta entregas --salida reportes/marzo.csv
 uv run detector-ia -c ejemplos/misma_entrega.md --sin-modelo   # a single file
 uv run detector-ia --folder entregas --output reporte.csv --lang en
 uv run detector-ia --modelo fakespot-ai/roberta-base-ai-text-detection-v1
+uv run detector-ia -c entregas --html report.html --markdown report.md   # reports to read
+uv run detector-ia -c entregas --base brief.ipynb                        # ignore the template
 ```
 
 It also works without `uv`, with the environment active:
@@ -276,7 +323,12 @@ python -m detector_ia --carpeta revision_ia
 | `-s`, `--salida`, `--output` | `reporte_profesional_ia.csv` | Path of the generated report |
 | `-m`, `--modelo`, `--model` | AI-detection RoBERTa | Hugging Face model to use |
 | `--sin-modelo`, `--no-model` | off | Structural signals only, without downloading the model |
-| `--json` | off | Write the result as JSON on stdout and progress on stderr |
+| `--html PATH` | — | Also save a self-contained HTML report (works offline, with per-sentence marks and shared passages) |
+| `--markdown PATH`, `--md` | — | Also save a Markdown report |
+| `--base PATH` | — | Assignment brief or template (file or folder): what matches it does not count as copying |
+| `--perplejidad`, `--perplexity` | off | Add the Binoculars-style perplexity signal (experimental; needs the `modelo` extra) |
+| `--traduccion`, `--translation` | off | Look for translated plagiarism between Spanish and English (needs the `semantica` extra) |
+| `--json` | off | Write the result as JSON on stdout (with per-block detail) and progress on stderr |
 | `--fail-on` | `ninguno` | Exit with code 1 when the report reaches `error`, `alto`/`high` or `sospechoso`/`suspicious` (`none` works too) |
 | `--lang`, `--idioma` | `es` | Language of the console messages (`es`/`en`); the CSV does not change |
 | `-V`, `--version` | — | Print the installed version and exit |
@@ -290,12 +342,17 @@ The CSV is written in UTF-8 with BOM and a `;` separator so it opens directly in
 - **Archivo / Formato**: file name and extension of the submission.
 - **IA_Media (%)**: mean hybrid score of the scored blocks.
 - **IA_Pico_Max (%)**: highest-scoring block, the most AI-like passage.
-- **Similitud_Companero (%)** and **Coincide_Con**: most similar submission, with its name when similarity is above 75 %.
+- **Similitud_Companero (%)** and **Coincide_Con**: n-gram similarity with the most similar submission, and its name when it reaches 40 % (or the cosine is above 75 %). *Since 1.1.0 this column is no longer the cosine; the cosine is in `Similitud_Coseno (%)`.*
 - **Veredicto**: `ALTO RIESGO IA`, `REVISAR COPIA ENTRE ALUMNOS`, `Sospechoso (Revisar)`, `Normal` or `Poco texto`.
 - **Fragmento_Sospechoso**: the highest-scoring block, to read it in context.
 - **Error**: empty unless the file could not be read or scored; the verdict is then `Error` and the reason appears here, without stopping the rest of the batch.
+- Columns added in 1.1.0, at the end so the earlier ones do not move: **Similitud_Coseno (%)**, **Confianza** (`Alta`/`Media`/`Baja`), **Avisos**, **Fragmento_Coincidente** (the longest passage shared with `Coincide_Con`) and **Similitud_Traducida (%)** (only with `--traduccion`).
 
-Current thresholds (in `src/detector_ia/main.py`): peak ≥ 58 % or mean ≥ 45 % is high risk; peak ≥ 45 % or mean ≥ 35 % is suspicious; similarity > 88 % is possible copying.
+Current thresholds (in `src/detector_ia/main.py`): peak ≥ 58 % or mean ≥ 45 % is high risk; peak ≥ 45 % or mean ≥ 35 % is suspicious; n-gram similarity ≥ 60 % or cosine > 88 % is possible copying.
+
+#### HTML report
+
+`--html report.html` writes a single page that opens offline (it loads nothing from the internet): a summary by verdict, a sortable and filterable table, the score of every block, the traits that raise or lower the score marked inside the text, copied passages side by side and the most similar pairs of submissions. Student text is escaped, so it cannot run anything. Since it contains real work, treat it like the CSV.
 
 ### Layout
 
@@ -304,7 +361,12 @@ detector-ia/
 ├── src/detector_ia/
 │   ├── main.py          # CLI, thresholds and report generation
 │   ├── extractores.py   # Readers for .ipynb, .pdf, .docx, .txt and .md
-│   └── motores.py       # Neural model, structural fingerprint and similarity
+│   ├── motores.py       # Neural model, structural fingerprint and per-block scoring
+│   ├── perplejidad.py   # Binoculars-style signal (optional, experimental)
+│   ├── similitud.py     # N-grams with winnowing, copied passages and base template
+│   ├── semantica.py     # Translated plagiarism by meaning (optional)
+│   ├── confianza.py     # Confidence level and notices
+│   └── informes.py      # HTML and Markdown reports
 ├── tests/               # Tests with a fake detector, no model download
 ├── docs/                # Index, method, responsible use and formats
 ├── ejemplos/            # Invented texts for trying the tool

@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v7
 
@@ -32,3 +32,36 @@ jobs:
 
       - name: Pruebas
         run: uv run pytest
+
+      # Con el entorno de desarrollo ya instalado, se ejecuta la herramienta de punta a punta
+      - name: Prueba de humo del CLI
+        run: >
+          uv run detector-ia -c ejemplos --sin-modelo
+          -s ${{ runner.temp }}/reporte.csv
+          --html ${{ runner.temp }}/informe.html
+          --markdown ${{ runner.temp }}/informe.md
+
+  paquete:
+    name: Paquete (build + twine check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v7
+
+      - name: Instalar Python 3.13
+        run: uv python install 3.13
+
+      - name: Construir
+        run: uv build
+
+      - name: Comprobar metadatos y README (lo que verá PyPI)
+        run: uvx twine check --strict dist/*
+
+      - name: Instalar la rueda en un entorno limpio y probarla
+        run: |
+          uv venv --python 3.13 "$RUNNER_TEMP/venv"
+          uv pip install --python "$RUNNER_TEMP/venv/bin/python" dist/*.whl
+          "$RUNNER_TEMP/venv/bin/detector-ia" --version
+          "$RUNNER_TEMP/venv/bin/detector-ia" --help > /dev/null
+          "$RUNNER_TEMP/venv/bin/detector-ia" -c ejemplos --sin-modelo -s "$RUNNER_TEMP/r.csv" --html "$RUNNER_TEMP/r.html"

@@ -19,11 +19,13 @@ INSTALACION = """\
 ```bash
 pip install detector-ia            # sin modelo neuronal / structural signals only
 pip install "detector-ia[modelo]"  # con el modelo neuronal / with the neural model
+pip install "detector-ia[semantica]"  # plagio traducido (--traduccion) / translated plagiarism
 ```
 
 ```bash
 detector-ia -c revision_ia              # carpeta de entregas / submissions folder
 detector-ia -c revision_ia/entrega.pdf  # una sola entrega / a single file
+detector-ia -c revision_ia --html informe.html   # informe para leer / report to read
 detector-ia --help                      # opciones, en los dos idiomas / options in both languages
 ```
 """

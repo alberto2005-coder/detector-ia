@@ -9,6 +9,35 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Se
 
 ## Español
 
+### [1.1.0] — 2026-11-19
+
+#### Añadido
+
+- **Plagio por n-gramas con winnowing** (la idea de MOSS): compara el orden de las palabras, no solo el vocabulario. En los cuadernos normaliza el código (variables, números y cadenas), así que renombrar variables no esconde la copia.
+- **Pasajes coincidentes**: el informe y la columna `Fragmento_Coincidente` muestran qué texto comparten dos entregas.
+- **`--base`**: enunciado o plantilla (archivo o carpeta) cuyo contenido no cuenta como copia, ni en los n-gramas ni en el coseno.
+- **`--html`**: informe HTML autocontenido y sin conexión, con resumen, tabla ordenable y filtrable, puntuación por bloque, rasgos marcados dentro del texto, pasajes copiados lado a lado y pares más parecidos. El texto de los alumnos se escapa.
+- **`--markdown`** (`--md`): informe en Markdown, útil para resúmenes de GitHub Actions.
+- **Confianza y avisos**: columnas `Confianza` (`Alta`/`Media`/`Baja`) y `Avisos` (texto corto, posible texto mixto, puntuación solo por uniformidad, muchas citas) y aviso visible sobre el sesgo con quien no escribe en su lengua.
+- **`--perplejidad`** (experimental): señal tipo Binoculars con dos modelos de lenguaje pequeños. Sus límites no están calibrados para español.
+- **`--traduccion`** (extra `semantica`): avisa de posible plagio traducido entre español e inglés comparando frases por significado. Solo avisa; no cambia el veredicto.
+- `--json` incluye el detalle de cada bloque, la confianza, los avisos y los pasajes coincidentes.
+- `--help` y `--version` muestran el autor, su web y los enlaces del proyecto.
+- `docs/CI.md`: guía para usar `--fail-on` y los informes en GitHub Actions.
+- Corpus de evaluación ampliado de 12 a 42 textos sintéticos en siete categorías, y `evaluar.py` con resumen por categoría, barrido de umbrales y `--json`.
+
+#### Cambiado
+
+- `Similitud_Companero (%)` ahora es la similitud por n-gramas; el coseno clásico pasa a `Similitud_Coseno (%)`. Se marca copia con n-gramas ≥ 60 % o coseno > 88 %.
+- Las columnas nuevas del CSV se añaden al final, así que las anteriores no cambian de posición.
+- La publicación en PyPI usa `pypa/gh-action-pypi-publish` con atestaciones de procedencia (desde la 1.0.2).
+- `numpy` pasa a ser una dependencia declarada.
+- CI también en macOS y comprobación del paquete (`twine check`).
+
+#### Medido
+
+- Con solo las señales estructurales, el texto de IA sin editar se detecta (5 de 6), pero no el retocado a mano ni el escrito «como un estudiante» (0 de 14), cuyas puntuaciones se solapan con las del humano formal. Los umbrales no se han cambiado. El modelo neuronal y la perplejidad no se pudieron medir en este entorno; ver [Método y calibración](docs/METODO.md).
+
 ### [1.0.2] — 2026-11-18
 
 #### Cambiado
@@ -88,6 +117,35 @@ Primera versión utilizable del detector.
 ---
 
 ## English
+
+### [1.1.0] — 2026-11-19
+
+#### Added
+
+- **N-gram plagiarism with winnowing** (the idea behind MOSS): compares word order, not just vocabulary. In notebooks it normalises the code (variables, numbers and strings), so renaming variables does not hide the copy.
+- **Shared passages**: the report and the `Fragmento_Coincidente` column show which text two submissions share.
+- **`--base`**: an assignment brief or template (file or folder) whose content does not count as copying, neither in the n-grams nor in the cosine.
+- **`--html`**: self-contained, offline HTML report with a summary, a sortable and filterable table, per-block scores, traits marked inside the text, copied passages side by side and the most similar pairs. Student text is escaped.
+- **`--markdown`** (`--md`): Markdown report, handy for GitHub Actions summaries.
+- **Confidence and notices**: `Confianza` (`Alta`/`Media`/`Baja`) and `Avisos` columns (short text, possibly mixed text, score from uniformity only, many quotations) and a visible notice about bias against people not writing in their first language.
+- **`--perplejidad`** (experimental): a Binoculars-style signal with two small language models. Its limits are not calibrated for Spanish.
+- **`--traduccion`** (`semantica` extra): flags possible translated plagiarism between Spanish and English by comparing sentences by meaning. It only flags; it does not change the verdict.
+- `--json` includes the detail of every block, the confidence, the notices and the shared passages.
+- `--help` and `--version` show the author, their website and the project links.
+- `docs/CI.md`: guide to using `--fail-on` and the reports in GitHub Actions.
+- Evaluation corpus grown from 12 to 42 synthetic texts in seven categories, and `evaluar.py` with a per-category summary, a threshold sweep and `--json`.
+
+#### Changed
+
+- `Similitud_Companero (%)` is now the n-gram similarity; the classic cosine moves to `Similitud_Coseno (%)`. A pair is flagged as copying at n-grams ≥ 60 % or cosine > 88 %.
+- The new CSV columns are appended at the end, so the earlier ones keep their position.
+- PyPI publishing uses `pypa/gh-action-pypi-publish` with provenance attestations (since 1.0.2).
+- `numpy` becomes a declared dependency.
+- CI also on macOS and package check (`twine check`).
+
+#### Measured
+
+- With the structural signals alone, unedited AI text is detected (5 of 6), but text edited by hand or written "like a student" is not (0 of 14), and its scores overlap with formal human writing. The thresholds were not changed. The neural model and perplexity could not be measured in this environment; see [Method and calibration](docs/METODO.md).
 
 ### [1.0.2] — 2026-11-18
 

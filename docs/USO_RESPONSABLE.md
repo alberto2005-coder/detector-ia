@@ -10,6 +10,10 @@
 
 Un porcentaje no es un hallazgo. Antes de abrir el CSV, ten claro qué vas a hacer con el resultado y qué no: no puede ser una nota, ni una sanción, ni una prueba que se enseñe al alumno como evidencia.
 
+### Quién tiene más riesgo de un falso positivo
+
+Los detectores fallan más con quien escribe en una lengua que no es la suya, con textos traducidos y con redacciones muy formales o muy esquemáticas. Si el alumno está en alguno de esos casos, da aún menos peso al número. Mira también la columna `Confianza` y los `Avisos`: una confianza `Baja` significa que el resultado se apoya en muy poco texto o en la señal más débil.
+
 ### Qué hacer con un caso marcado
 
 1. **Lee el fragmento**. La columna `Fragmento_Sospechoso` existe para eso: se lee en contexto, no en aislado.
@@ -48,6 +52,10 @@ Si el caso termina en una decisión académica, el alumno debe poder explicar c�
 ### Before you look at the report
 
 A percentage is not a finding. Before opening the CSV, decide what you will and will not do with the result: it cannot be a grade, a sanction, or evidence shown to the student.
+
+### Who is most at risk of a false positive
+
+Detectors fail more often on people writing in a language that is not their first, on translated text and on very formal or very schematic writing. If the student falls into one of those groups, give the number even less weight. Also look at the `Confianza` column and the `Avisos`: a `Baja` confidence means the result rests on very little text or on the weakest signal.
 
 ### What to do with a flagged case
 
