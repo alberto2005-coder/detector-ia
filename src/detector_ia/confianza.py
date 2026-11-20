@@ -41,6 +41,26 @@ AVISOS = {
         "Possible translated plagiarism: some sentences have the same meaning as another "
         "submission written in a different language.",
     ),
+    "caracteres_ocultos": (
+        "El texto tenía caracteres invisibles o letras de otro alfabeto que imitan letras "
+        "latinas; se han normalizado antes de puntuar. Es un truco habitual para despistar "
+        "a los detectores.",
+        "The text contained invisible characters or letters from another alphabet that mimic "
+        "Latin ones; they were normalised before scoring. This is a common trick to fool "
+        "detectors.",
+    ),
+    "posible_humanizador": (
+        "Indicios de reescritura automática (frases torturadas o caracteres manipulados). "
+        "Señal débil: confírmalo leyendo el texto.",
+        "Signs of automatic rewriting (tortured phrases or manipulated characters). Weak "
+        "signal: confirm it by reading the text.",
+    ),
+    "edicion_minima": (
+        "El Word registra muy pocos minutos de edición para su extensión; puede haberse "
+        "pegado desde otro sitio. Dato orientativo, no prueba nada.",
+        "The Word file records very few editing minutes for its length; it may have been "
+        "pasted from elsewhere. Indicative only, not proof.",
+    ),
     "citas": (
         "Mucho texto entre comillas: las citas formales pueden inflar la puntuación.",
         "A lot of quoted text: formal quotations can inflate the score.",
@@ -57,10 +77,13 @@ AVISO_SESGO = (
 )
 
 
-def evaluar_confianza(evaluacion, texto):
-    """Devuelve (nivel, códigos de aviso) para una `Evaluacion` y el texto original."""
+def evaluar_confianza(evaluacion, texto, extra=()):
+    """Devuelve (nivel, códigos de aviso) para una `Evaluacion` y el texto original.
+
+    `extra` son avisos ya detectados fuera (caracteres ocultos, humanizador, metadatos).
+    """
     bloques = evaluacion.bloques
-    avisos = []
+    avisos = list(extra)
 
     if len(bloques) < MINIMO_BLOQUES:
         avisos.append("pocos_bloques")

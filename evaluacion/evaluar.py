@@ -18,6 +18,7 @@ import json
 import sys
 from pathlib import Path
 
+from detector_ia import limpieza
 from detector_ia.motores import AnalizadorIA
 
 UMBRALES = (45.0, 58.0)
@@ -81,10 +82,13 @@ def por_categoria(filas, umbral):
     return resumen
 
 
-def evaluar(corpus, etiquetas, analizador):
+def evaluar(corpus, etiquetas, analizador, *, limpiar=True):
+    """`limpiar` aplica la normalización de caracteres ocultos y homoglifos, como el CLI."""
     filas = []
     for nombre, etiqueta, categoria in cargar_etiquetas(etiquetas):
         texto = (corpus / nombre).read_text(encoding="utf-8")
+        if limpiar:
+            texto = limpieza.normalizar(texto)
         media, pico, _ = analizador.evaluar_texto(texto)
         filas.append(
             {"archivo": nombre, "etiqueta": etiqueta, "categoria": categoria,
@@ -103,6 +107,10 @@ def main(argv=None):
     parser.add_argument(
         "--perplejidad", action="store_true", help="Añade la señal de perplejidad (experimental)."
     )
+    parser.add_argument(
+        "--sin-limpieza", action="store_true",
+        help="No normaliza invisibles ni homoglifos: mide cuánto engañan los ataques.",
+    )
     parser.add_argument("--json", action="store_true", help="Resultado en JSON por la salida.")
     args = parser.parse_args(argv)
     if hasattr(sys.stdout, "reconfigure"):
@@ -114,7 +122,9 @@ def main(argv=None):
 
         perplejidad = DetectorPerplejidad()
     analizador = AnalizadorIA(usar_modelo=not args.sin_modelo, perplejidad=perplejidad)
-    filas = evaluar(Path(args.corpus), Path(args.etiquetas), analizador)
+    filas = evaluar(
+        Path(args.corpus), Path(args.etiquetas), analizador, limpiar=not args.sin_limpieza
+    )
     pares = [(f["etiqueta"], f["pico"]) for f in filas]
 
     if args.json:

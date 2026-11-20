@@ -64,6 +64,7 @@ class Bloque:
     perplejidad: float | None
     puntuacion: float
     marcas: list = field(default_factory=list)  # posiciones relativas al inicio del bloque
+    frases: list = field(default_factory=list)  # {inicio, fin, puntuacion, origen}
 
 
 @dataclass
@@ -121,6 +122,19 @@ def marcas_huella(texto):
     return marcas
 
 
+FRASE_MINIMA_PALABRAS = 8
+_FIN_FRASE = re.compile(r"[^.!?\n]+[.!?]*", re.UNICODE)
+
+
+def dividir_frases(texto):
+    """Frases con su posición (inicio, fin) dentro de `texto`."""
+    return [
+        (m.start(), m.end())
+        for m in _FIN_FRASE.finditer(texto)
+        if m.group().strip()
+    ]
+
+
 class AnalizadorIA:
     """Combina la huella estructural, la uniformidad y un modelo neuronal.
 
@@ -135,7 +149,9 @@ class AnalizadorIA:
         usar_modelo=True,
         idioma="es",
         perplejidad=None,
+        por_frase=False,
     ):
+        self.por_frase = por_frase  # puntúa cada frase con el modelo neuronal (más lento)
         self.modelo = modelo
         self.usar_modelo = usar_modelo
         self.detector = detector
@@ -215,6 +231,33 @@ class AnalizadorIA:
         self.historial_probabilidades.extend(probabilidades)
         return probabilidades
 
+    def _puntuar_frases(self, trozo, puntuacion_bloque):
+        """Puntuación de cada frase del bloque.
+
+        Con `por_frase` y un modelo cargado, el modelo puntúa cada frase de 8 palabras o más
+        (origen "modelo"); si no, se usa la huella estructural de la propia frase (origen
+        "huella"). Las frases cortas heredan la puntuación del bloque con origen "bloque".
+        """
+        frases = dividir_frases(trozo)
+        textos = [trozo[i:f].strip() for i, f in frases]
+        largas = [n for n, t in enumerate(textos) if len(t.split()) >= FRASE_MINIMA_PALABRAS]
+        modelo = {}
+        if self.por_frase and self.usar_modelo and self.detector is not None and largas:
+            probabilidades = self._probabilidades_neuronales([textos[n] for n in largas])
+            modelo = dict(zip(largas, probabilidades, strict=True))
+        resultado = []
+        for n, (inicio, fin) in enumerate(frases):
+            if n in modelo:
+                valor, origen = modelo[n], "modelo"
+            elif n in largas:
+                valor, origen = self._huella_llm_espanol(textos[n]), "huella"
+            else:
+                valor, origen = puntuacion_bloque, "bloque"
+            resultado.append(
+                {"inicio": inicio, "fin": fin, "puntuacion": round(valor, 1), "origen": origen}
+            )
+        return resultado
+
     def _pesos(self):
         if self.perplejidad is not None:
             pesos = dict(PESOS_CON_PERPLEJIDAD)
@@ -273,6 +316,7 @@ class AnalizadorIA:
                     perplejidad=p_perplejidad,
                     puntuacion=puntuacion,
                     marcas=marcas_huella(trozo),
+                    frases=self._puntuar_frases(trozo, puntuacion),
                 )
             )
 

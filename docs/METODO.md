@@ -189,3 +189,17 @@ The report does not say "this student used AI". It says "this block looks like g
 ### Licences
 
 The code in this repository is MIT. The model it downloads is a separate project: `fakespot-ai/roberta-base-ai-text-detection-v1` is distributed under **Apache-2.0**, as is its base model `FacebookAI/roberta-base`. That licence is not granted by this repository: if you redistribute the model or a derivative, credit its authors and keep their notice.
+
+## Robustez frente a trucos (1.2.0)
+
+Los benchmarks de robustez (RAID) muestran que los detectores se dejan engañar con ataques baratos. Antes de puntuar, la herramienta normaliza los espacios de ancho cero y los homoglifos (letras cirílicas o griegas dentro de palabras latinas) y lo avisa. Con las señales estructurales, en el corpus adversario (`evaluacion/generar_adversarios.py`, 24 textos derivados de los 6 de IA sin editar), la detección sin esta limpieza baja de 5/6 a 1–2/6 con invisibles y homoglifos, y con ella vuelve a 5/6. Las erratas y el cambio de orden de palabras casi no afectan a esas señales; no se ha medido su efecto sobre el modelo neuronal ni sobre la perplejidad (no hay acceso al modelo en el entorno de desarrollo). El corpus es sintético y pequeño: sirve para detectar regresiones, no para dar un porcentaje de acierto.
+
+El «indicio de humanizador» busca frases torturadas (sinónimos que ningún autor escribiría) y es una señal débil; no detecta reescrituras limpias. Los minutos de edición de un Word son orientativos: un texto pegado desde otro editor también los muestra bajos.
+
+---
+
+## Robustness against tricks (1.2.0)
+
+Robustness benchmarks (RAID) show that detectors are fooled by cheap attacks. Before scoring, the tool normalises zero-width spaces and homoglyphs (Cyrillic or Greek letters inside Latin words) and flags them. With the structural signals, on the adversarial corpus (`evaluacion/generar_adversarios.py`, 24 texts derived from the 6 unedited AI ones), detection without this cleaning drops from 5/6 to 1–2/6 for invisibles and homoglyphs, and with it returns to 5/6. Typos and word-order swaps barely affect those signals; their effect on the neural model and perplexity has not been measured (no model access in the development environment). The corpus is synthetic and small: it detects regressions, it does not give an accuracy percentage.
+
+The "humaniser hint" looks for tortured phrases (synonyms no author would write) and is a weak signal; it does not detect clean rewrites. Word editing minutes are indicative: text pasted from another editor also shows low minutes.

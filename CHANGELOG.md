@@ -9,6 +9,37 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Se
 
 ## Español
 
+### [1.2.0] — 2026-11-20
+
+#### Añadido
+
+- **Línea final en consola**: al terminar cada análisis se imprime `detector-ia 1.2.0 · Alberto Ortiz Sánchez · albertoortiz.is-a.dev` por la salida de errores, así que `--json` y las tuberías no se rompen. Se quita con `--sin-credito` o con `DETECTOR_IA_SIN_CREDITO=1`.
+- **Pie de crédito en los informes HTML y Markdown** con la web del autor y el enlace a PyPI (también se quita con `--sin-credito`).
+- **Caracteres ocultos y homoglifos**: se detectan espacios de ancho cero y letras cirílicas o griegas que imitan letras latinas, se normaliza el texto antes de puntuar y se avisa. En el corpus adversario, sin esta limpieza la detección bajaba de 5/6 a 1–2/6 con estos ataques; con ella se recupera.
+- **Corpus adversario** (24 textos, `evaluacion/generar_adversarios.py`): invisibles, homoglifos, erratas y palabras cambiadas de orden; `evaluar.py --sin-limpieza` mide cuánto engañan.
+- **Indicio de humanizador** (señal débil): frases torturadas típicas de parafraseadores o caracteres manipulados.
+- **`--calibrar CARPETA`** y **`--calibracion JSON`**: ajusta los umbrales a textos humanos de tu centro. Nunca baja de los umbrales por defecto.
+- **`--alta-precision`**: umbrales más exigentes; ante la duda el veredicto es `No concluyente` en vez de acusar.
+- **`--frases`**: puntúa cada frase con el modelo y las sombrea en el informe HTML. Sin esa opción se sombrean con la huella estructural.
+- **Grupos de copia**: si A≈B y B≈C se muestran como un grupo (`Grupo` en el CSV, grafo en el HTML, lista en Markdown y JSON).
+- **`--lms RUTA`**: CSV genérico (identificador, veredicto, similitud, grupo, comentario) para copiar a una hoja de calificaciones.
+- **Metadatos de Word**: aviso orientativo si un `.docx` largo registra casi 0 minutos de edición.
+- **`--separador`** y **`--csv-limpio`** para el CSV.
+- **Con `--lang en`** también se traducen los veredictos de la consola y el CSV (cabeceras y valores: `File`, `Verdict`, `HIGH AI RISK`, `None`…). `--json` mantiene los nombres en español. Alias `--gradebook` para `--lms`.
+
+#### Cambiado
+
+- **El CSV empieza ahora con una línea `sep=;`** para que Excel separe bien las columnas con cualquier configuración regional. Si lo lees con pandas u otro programa, usa `--csv-limpio` (o `skiprows=1`).
+- Nueva columna `Grupo` al final del CSV.
+- Veredicto nuevo `No concluyente` (solo con `--alta-precision`); cuenta como sospechoso en `--fail-on sospechoso`.
+
+#### Límites
+
+- Las erratas y el cambio de orden de palabras no afectan a las señales estructurales; su efecto sobre el modelo neuronal y la perplejidad no está medido en este corpus.
+- El indicio de humanizador usa una lista corta de frases; no detecta reescrituras limpias.
+- Los minutos de edición de Word son un dato orientativo (un texto pegado desde otro editor también los muestra bajos).
+- El CSV para hojas de calificaciones es genérico: no se ha probado contra ninguna plataforma concreta.
+
 ### [1.1.0] — 2026-11-19
 
 #### Añadido
@@ -117,6 +148,37 @@ Primera versión utilizable del detector.
 ---
 
 ## English
+
+### [1.2.0] — 2026-11-20
+
+#### Added
+
+- **Closing console line**: after every analysis it prints `detector-ia 1.2.0 · Alberto Ortiz Sánchez · albertoortiz.is-a.dev` to stderr, so `--json` and pipes are unaffected. Disable it with `--no-credit` or `DETECTOR_IA_SIN_CREDITO=1`.
+- **Credit footer in the HTML and Markdown reports** with the author's website and the PyPI link (also removed by `--no-credit`).
+- **Hidden characters and homoglyphs**: zero-width spaces and Cyrillic/Greek letters that mimic Latin ones are detected, the text is normalised before scoring, and a notice is shown. In the adversarial corpus, without this cleaning detection dropped from 5/6 to 1–2/6 under these attacks; with it, it recovers.
+- **Adversarial corpus** (24 texts, `evaluacion/generar_adversarios.py`): invisibles, homoglyphs, typos and swapped words; `evaluar.py --sin-limpieza` measures how much they fool it.
+- **Humaniser hint** (weak signal): tortured phrases typical of paraphrasers, or manipulated characters.
+- **`--calibrar FOLDER`** and **`--calibracion JSON`**: tune thresholds to your institution's human texts. They never go below the defaults.
+- **`--high-precision`**: stricter thresholds; when in doubt the verdict is `No concluyente` instead of an accusation.
+- **`--sentences`**: scores each sentence with the model and shades them in the HTML report. Without it, sentences are shaded using the structural fingerprint.
+- **Copy groups**: if A≈B and B≈C they appear as one group (`Grupo` column, graph in HTML, list in Markdown and JSON).
+- **`--lms PATH`**: generic CSV (id, verdict, similarity, group, comment) to paste into a gradebook.
+- **Word metadata**: an indicative notice when a long `.docx` records almost 0 editing minutes.
+- **`--separator`** and **`--plain-csv`** for the CSV.
+- **With `--lang en`** the console verdicts and the CSV (headers and values: `File`, `Verdict`, `HIGH AI RISK`, `None`…) are now translated too. `--json` keeps the Spanish names. Alias `--gradebook` for `--lms`.
+
+#### Changed
+
+- **The CSV now starts with a `sep=;` line** so Excel splits the columns under any regional setting. If you read it with pandas or another tool, use `--plain-csv` (or `skiprows=1`).
+- New `Grupo` column at the end of the CSV.
+- New verdict `No concluyente` (only with `--high-precision`); it counts as suspicious for `--fail-on suspicious`.
+
+#### Limits
+
+- Typos and word-order swaps do not affect the structural signals; their effect on the neural model and perplexity is not measured on this corpus.
+- The humaniser hint uses a short phrase list; it does not detect clean rewrites.
+- Word editing minutes are indicative only (text pasted from another editor also shows low minutes).
+- The gradebook CSV is generic: it has not been tested against any specific platform.
 
 ### [1.1.0] — 2026-11-19
 

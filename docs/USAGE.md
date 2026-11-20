@@ -38,10 +38,16 @@ Analizando 4 entregas (Jupyter, PDF, Word, Markdown, TXT)...
 - `--markdown informe.md` genera lo mismo en texto, útil para pegarlo en una incidencia o en el resumen de una acción de GitHub.
 - Si todos los alumnos parten de un enunciado o de un cuaderno con celdas ya escritas, pásalo con `--base enunciado.ipynb` (archivo o carpeta). Lo que coincida con él no cuenta como copia.
 - Con `--traduccion` (necesita `pip install "detector-ia[semantica]"`) se avisa si una entrega parece traducción de otra escrita en otro idioma. Es solo un aviso.
+- Si varias entregas se copian entre sí (A≈B, B≈C) aparecen como un grupo (`Grupo` en el CSV y un grafo en el HTML).
+- `--lms notas.csv` genera un CSV genérico (coma) con identificador, veredicto, similitud y comentario para copiarlo a una hoja de calificaciones. No se ha probado con ninguna plataforma concreta.
+- `--calibrar textos_humanos/ -s calibracion.json` mide textos que sabes que escribió una persona (mínimo 10) y guarda umbrales ajustados; después `--calibracion calibracion.json`. Con `--alta-precision` el programa solo acusa de IA con umbrales exigentes y, ante la duda, responde `No concluyente`.
+- Al terminar se imprime una línea con el autor y la web (por la salida de errores). `--sin-credito` la quita, y también el pie de los informes.
 
 ### Solución de problemas
 
 **Tarda mucho la primera vez.** Descarga el modelo (~500 MB) en `cache_modelo/`. Las siguientes ejecuciones son rápidas y funcionan sin conexión.
+
+**Excel muestra todo en una sola columna.** Excel separa las columnas según la configuración regional. El CSV empieza con una línea `sep=;` para evitarlo; si aun así lo ves mal, usa Datos → Obtener datos → Desde texto/CSV y elige «Punto y coma», o genera el CSV con `--separador ","`. Para leerlo con pandas usa `--csv-limpio`.
 
 **El modelo se guarda en otro sitio.** La herramienta define `HF_HOME=./cache_modelo` solo si no está ya definido; exporta `HF_HOME` si quieres otro caché.
 
@@ -88,10 +94,16 @@ Analizando 4 entregas (Jupyter, PDF, Word, Markdown, TXT)...
 - `--markdown report.md` writes the same as text, handy to paste into an issue or into a GitHub Actions summary.
 - If every student starts from a brief or from a notebook with cells already written, pass it with `--base brief.ipynb` (file or folder). What matches it does not count as copying.
 - With `--traduccion` (needs `pip install "detector-ia[semantica]"`) you get a notice when a submission looks like a translation of one written in another language. It is only a notice.
+- If several submissions copy each other (A≈B, B≈C) they appear as one group (`Grupo` in the CSV and a graph in the HTML).
+- `--lms grades.csv` writes a generic CSV (comma) with id, verdict, similarity and comment to paste into a gradebook. It has not been tested against any specific platform.
+- `--calibrate human_texts/ -s calibration.json` measures texts you know a person wrote (at least 10) and saves tuned thresholds; then `--calibration calibration.json`. With `--high-precision` the program only accuses with strict thresholds and, when in doubt, answers `No concluyente`.
+- A line with the author and website is printed when it finishes (to stderr). `--no-credit` removes it, and the report footer too.
 
 ### Troubleshooting
 
 **The first run is slow.** It downloads the model (~500 MB) into `cache_modelo/`. Later runs are fast and work offline.
+
+**Excel shows everything in a single column.** Excel splits columns according to the regional setting. The CSV starts with a `sep=;` line to avoid this; if it still looks wrong, use Data → From Text/CSV and choose "Semicolon", or generate the CSV with `--separator ","`. To read it with pandas use `--plain-csv`.
 
 **The model is cached somewhere else.** The tool sets `HF_HOME=./cache_modelo` only when it is not already defined; export `HF_HOME` if you prefer another cache.
 

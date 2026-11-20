@@ -133,27 +133,43 @@ python -m detector_ia --carpeta revision_ia
 | `--base RUTA` | — | Enunciado o plantilla (archivo o carpeta): lo que coincida con ella no cuenta como copia |
 | `--perplejidad`, `--perplexity` | desactivado | Añade la señal de perplejidad tipo Binoculars (experimental; requiere el extra `modelo`) |
 | `--traduccion`, `--translation` | desactivado | Busca plagio traducido entre español e inglés (requiere el extra `semantica`) |
+| `--alta-precision`, `--high-precision` | desactivado | Umbrales más exigentes; ante la duda el veredicto es `No concluyente` en vez de acusar |
+| `--calibrar CARPETA`, `--calibrate` | — | Mide textos escritos por personas y guarda umbrales ajustados (JSON); nunca bajan de los de por defecto |
+| `--calibracion JSON`, `--calibration` | — | Usa los umbrales de un archivo creado con `--calibrar` |
+| `--frases`, `--sentences` | desactivado | Puntúa cada frase con el modelo y la sombrea en el informe HTML (más lento) |
+| `--lms RUTA`, `--gradebook` | — | CSV genérico (coma) con identificador, veredicto, similitud, grupo y comentario para una hoja de calificaciones |
+| `--separador`, `--separator` | `;` | Separador del CSV: `;`, `,` o `tab` |
+| `--csv-limpio`, `--plain-csv` | desactivado | No añade la línea `sep=;` del principio (úsalo para leer el CSV con pandas) |
+| `--sin-credito`, `--no-credit` | desactivado | Quita la línea final de consola y el pie de los informes (también con `DETECTOR_IA_SIN_CREDITO=1`) |
 | `--json` | desactivado | Escribe el resultado en JSON por la salida estándar (con el detalle de cada bloque) y el progreso por la de errores |
 | `--fail-on` | `ninguno` | Devuelve código de salida 1 si el reporte alcanza `error`, `alto`/`high` o `sospechoso`/`suspicious` (también vale `none`) |
 | `--lang`, `--idioma` | `es` | Idioma de los mensajes de consola (`es`/`en`); el CSV no cambia |
 | `-V`, `--version` | — | Muestra la versión instalada y sale |
 
-Todos los flags, sus valores y la ayuda de `-h` se pueden escribir en español o en inglés: `--carpeta entregas` y `--folder entregas` hacen lo mismo, igual que `--salida`/`--output`. El CSV y los veredictos se quedan en español para que las columnas no cambien según el idioma; solo se traducen los mensajes de consola.
+Todos los flags, sus valores y la ayuda de `-h` se pueden escribir en español o en inglés: `--carpeta entregas` y `--folder entregas` hacen lo mismo, igual que `--salida`/`--output`. Con `--lang en` se traducen los mensajes de consola, los veredictos y el CSV (cabeceras `File`, `Format`, `AI_Mean (%)`, `AI_Peak_Max (%)`, `Peer_Similarity (%)`, `Matches_With`, `Verdict`, `Suspicious_Fragment`, `Error`, `Cosine_Similarity (%)`, `Confidence`, `Warnings`, `Matching_Fragment`, `Translated_Similarity (%)`, `Group`). Sin `--lang en` todo queda en español como siempre. La salida `--json` mantiene siempre los nombres en español para que los programas que la leen no cambien. Si lees el CSV desde un programa, fija el idioma para que las columnas no varíen.
 
 ### Reporte
 
-El CSV se guarda en UTF-8 con BOM y separador `;` para que abra directamente en Excel en español. Columnas:
+El CSV se guarda en UTF-8 con BOM y separador `;`. La primera línea es `sep=;`, una pista que hace que Excel separe bien las columnas con cualquier configuración regional (sin ella, un Excel configurado con coma lo mete todo en una sola columna). Si lo lees con pandas u otro programa, usa `--csv-limpio` o `skiprows=1`. Columnas:
 
 - **Archivo / Formato**: nombre y extensión de la entrega.
 - **IA_Media (%)**: media de la puntuación híbrida de los bloques evaluados.
 - **IA_Pico_Max (%)**: bloque con la puntuación más alta, el que más se parece a texto de IA.
 - **Similitud_Companero (%)** y **Coincide_Con**: similitud por n-gramas con la entrega más parecida y su nombre si llega al 40 % (o si el coseno supera el 75 %). *Desde la 1.1.0 esta columna ya no es el coseno; el coseno está en `Similitud_Coseno (%)`.*
-- **Veredicto**: `ALTO RIESGO IA`, `REVISAR COPIA ENTRE ALUMNOS`, `Sospechoso (Revisar)`, `Normal` o `Poco texto`.
+- **Veredicto**: `ALTO RIESGO IA`, `REVISAR COPIA ENTRE ALUMNOS`, `Sospechoso (Revisar)`, `Normal`, `Poco texto` o, solo con `--alta-precision`, `No concluyente`.
 - **Fragmento_Sospechoso**: el bloque con mayor puntuación, para leerlo en contexto.
 - **Error**: vacía salvo que el archivo no se pudiera leer o puntuar; en ese caso el veredicto es `Error` y aquí aparece el motivo, sin detener el resto del lote.
 - Columnas añadidas en la 1.1.0, al final para no mover las anteriores: **Similitud_Coseno (%)**, **Confianza** (`Alta`/`Media`/`Baja`), **Avisos**, **Fragmento_Coincidente** (el pasaje más largo que comparte con `Coincide_Con`) y **Similitud_Traducida (%)** (solo con `--traduccion`).
+- Columna añadida en la 1.2.0: **Grupo** (`G1`, `G2`… si varias entregas se copian entre sí; vacía si no).
 
 Umbrales actuales (en `src/detector_ia/main.py`): pico ≥ 58 % o media ≥ 45 % es alto riesgo; pico ≥ 45 % o media ≥ 35 % es sospechoso; similitud por n-gramas ≥ 60 % o coseno > 88 % es posible copia.
+
+#### Qué hay de nuevo en la 1.2.0
+
+- **Crédito**: al terminar cada análisis se imprime `detector-ia 1.2.0 · Alberto Ortiz Sánchez · albertoortiz.is-a.dev` por la salida de errores, y los informes HTML y Markdown llevan un pie con la web del autor y el enlace a PyPI. `--sin-credito` lo quita.
+- **Trucos con caracteres**: los espacios de ancho cero y las letras cirílicas que imitan letras latinas se detectan, se normalizan y se avisan. Medido en el corpus adversario (solo señales estructurales), sin esa limpieza la detección bajaba de 5/6 a 1–2/6; con ella vuelve a 5/6. Las erratas y el cambio de orden de palabras no afectan a esas señales; su efecto sobre el modelo neuronal no está medido.
+- **Calibración**: `detector-ia --calibrar textos_humanos/ -s calibracion.json` y luego `--calibracion calibracion.json`. Hacen falta al menos 10 textos; con pocos, los umbrales no son fiables.
+- **Grupos de copia**, **`--lms`**, **metadatos de Word** y **puntuación por frase**: ver el changelog. Los minutos de edición de Word y el indicio de humanizador son señales débiles y orientativas.
 
 #### Informe HTML
 
@@ -328,27 +344,43 @@ python -m detector_ia --carpeta revision_ia
 | `--base PATH` | — | Assignment brief or template (file or folder): what matches it does not count as copying |
 | `--perplejidad`, `--perplexity` | off | Add the Binoculars-style perplexity signal (experimental; needs the `modelo` extra) |
 | `--traduccion`, `--translation` | off | Look for translated plagiarism between Spanish and English (needs the `semantica` extra) |
+| `--high-precision`, `--alta-precision` | off | Stricter thresholds; when in doubt the verdict is `No concluyente` instead of an accusation |
+| `--calibrate FOLDER`, `--calibrar` | — | Measures human-written texts and saves tuned thresholds (JSON); they never go below the defaults |
+| `--calibration JSON`, `--calibracion` | — | Uses the thresholds from a file created with `--calibrate` |
+| `--sentences`, `--frases` | off | Scores each sentence with the model and shades it in the HTML report (slower) |
+| `--lms PATH`, `--gradebook` | — | Generic CSV (comma) with id, verdict, similarity, group and comment for a gradebook |
+| `--separator`, `--separador` | `;` | CSV separator: `;`, `,` or `tab` |
+| `--plain-csv`, `--csv-limpio` | off | Do not add the `sep=;` first line (use it to read the CSV with pandas) |
+| `--no-credit`, `--sin-credito` | off | Removes the closing console line and the report footer (also with `DETECTOR_IA_SIN_CREDITO=1`) |
 | `--json` | off | Write the result as JSON on stdout (with per-block detail) and progress on stderr |
 | `--fail-on` | `ninguno` | Exit with code 1 when the report reaches `error`, `alto`/`high` or `sospechoso`/`suspicious` (`none` works too) |
 | `--lang`, `--idioma` | `es` | Language of the console messages (`es`/`en`); the CSV does not change |
 | `-V`, `--version` | — | Print the installed version and exit |
 
-Every flag, its values and the `-h` help can be written in Spanish or in English: `--carpeta entregas` and `--folder entregas` are the same thing, as are `--salida`/`--output`. The CSV and the verdicts stay in Spanish so the columns never change with the language; only the console messages are translated.
+Every flag, its values and the `-h` help can be written in Spanish or in English: `--carpeta entregas` and `--folder entregas` are the same thing, as are `--salida`/`--output`. With `--lang en` the console messages, the verdicts and the CSV are translated (headers `File`, `Format`, `AI_Mean (%)`, `AI_Peak_Max (%)`, `Peer_Similarity (%)`, `Matches_With`, `Verdict`, `Suspicious_Fragment`, `Error`, `Cosine_Similarity (%)`, `Confidence`, `Warnings`, `Matching_Fragment`, `Translated_Similarity (%)`, `Group`). Without `--lang en` everything stays in Spanish as before. The `--json` output always keeps the Spanish names so programs that read it do not change. If you read the CSV from a program, fix the language so the columns do not vary.
 
 ### Report
 
-The CSV is written in UTF-8 with BOM and a `;` separator so it opens directly in Spanish-locale Excel. Columns:
+The CSV is written in UTF-8 with BOM and a `;` separator. Its first line is `sep=;`, a hint that makes Excel split the columns correctly under any regional setting (without it, an Excel set to use commas puts everything in one column). If you read it with pandas or another tool, use `--plain-csv` or `skiprows=1`. Columns:
 
 - **Archivo / Formato**: file name and extension of the submission.
 - **IA_Media (%)**: mean hybrid score of the scored blocks.
 - **IA_Pico_Max (%)**: highest-scoring block, the most AI-like passage.
 - **Similitud_Companero (%)** and **Coincide_Con**: n-gram similarity with the most similar submission, and its name when it reaches 40 % (or the cosine is above 75 %). *Since 1.1.0 this column is no longer the cosine; the cosine is in `Similitud_Coseno (%)`.*
-- **Veredicto**: `ALTO RIESGO IA`, `REVISAR COPIA ENTRE ALUMNOS`, `Sospechoso (Revisar)`, `Normal` or `Poco texto`.
+- **Veredicto**: `ALTO RIESGO IA`, `REVISAR COPIA ENTRE ALUMNOS`, `Sospechoso (Revisar)`, `Normal`, `Poco texto` or, only with `--high-precision`, `No concluyente`.
 - **Fragmento_Sospechoso**: the highest-scoring block, to read it in context.
 - **Error**: empty unless the file could not be read or scored; the verdict is then `Error` and the reason appears here, without stopping the rest of the batch.
 - Columns added in 1.1.0, at the end so the earlier ones do not move: **Similitud_Coseno (%)**, **Confianza** (`Alta`/`Media`/`Baja`), **Avisos**, **Fragmento_Coincidente** (the longest passage shared with `Coincide_Con`) and **Similitud_Traducida (%)** (only with `--traduccion`).
+- Column added in 1.2.0: **Grupo** (`G1`, `G2`… when several submissions copy each other; empty otherwise).
 
 Current thresholds (in `src/detector_ia/main.py`): peak ≥ 58 % or mean ≥ 45 % is high risk; peak ≥ 45 % or mean ≥ 35 % is suspicious; n-gram similarity ≥ 60 % or cosine > 88 % is possible copying.
+
+#### What is new in 1.2.0
+
+- **Credit**: after each analysis `detector-ia 1.2.0 · Alberto Ortiz Sánchez · albertoortiz.is-a.dev` is printed to stderr, and the HTML and Markdown reports carry a footer with the author's website and the PyPI link. `--no-credit` removes it.
+- **Character tricks**: zero-width spaces and Cyrillic letters that mimic Latin ones are detected, normalised and flagged. Measured on the adversarial corpus (structural signals only), without this cleaning detection fell from 5/6 to 1–2/6; with it it returns to 5/6. Typos and word-order swaps do not affect those signals; their effect on the neural model is not measured.
+- **Calibration**: `detector-ia --calibrate human_texts/ -s calibration.json`, then `--calibration calibration.json`. At least 10 texts are needed; with fewer, the thresholds are not reliable.
+- **Copy groups**, **`--lms`**, **Word metadata** and **per-sentence scoring**: see the changelog. Word editing minutes and the humaniser hint are weak, indicative signals.
 
 #### HTML report
 

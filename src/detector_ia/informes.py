@@ -6,15 +6,17 @@ no envía los trabajos a ningún sitio.
 """
 
 import html
+import math
 from datetime import datetime
 
-from detector_ia import confianza
+from detector_ia import confianza, creditos
 
 VEREDICTO_CLASE = {
     "ALTO RIESGO IA": "alto",
     "REVISAR COPIA ENTRE ALUMNOS": "copia",
     "Sospechoso (Revisar)": "sosp",
     "Normal": "normal",
+    "No concluyente": "nc",
 }
 
 VEREDICTO_EN = {
@@ -22,6 +24,7 @@ VEREDICTO_EN = {
     "REVISAR COPIA ENTRE ALUMNOS": "CHECK FOR COPYING",
     "Sospechoso (Revisar)": "Suspicious (review)",
     "Normal": "Normal",
+    "No concluyente": "Inconclusive",
     "Poco texto": "Too little text",
     "Error": "Error",
 }
@@ -61,6 +64,15 @@ TEXTOS = {
         "pares": "Pares de entregas más parecidos",
         "par_cols": ["Entrega A", "Entrega B", "N-gramas", "Coseno"],
         "sin_pares": "No hay pares con parecido relevante.",
+        "grupos": "Grupos de copia",
+        "grupo_n": "Grupo {id} · {n} entregas",
+        "frases": "Frases del bloque más alto (más oscuro = más sospechosa)",
+        "frases_modelo": "puntuadas por el modelo",
+        "frases_huella": "puntuadas por la huella estructural",
+        "metadatos": "Metadatos del Word",
+        "meta_linea": "autor: {autor} · último autor: {ultimo} · creado: {creado} · "
+                      "modificado: {mod} · revisión: {rev} · minutos de edición: {min}",
+        "alta_precision": "Modo alta precisión activado",
         "error": "No se pudo analizar",
         "uso_resp": (
             "Es una ayuda para la revisión, no una prueba. Antes de actuar, lee el trabajo "
@@ -103,6 +115,15 @@ TEXTOS = {
         "pares": "Most similar pairs of submissions",
         "par_cols": ["Submission A", "Submission B", "N-grams", "Cosine"],
         "sin_pares": "No pairs with relevant similarity.",
+        "grupos": "Copy groups",
+        "grupo_n": "Group {id} · {n} submissions",
+        "frases": "Sentences of the highest block (darker = more suspicious)",
+        "frases_modelo": "scored by the model",
+        "frases_huella": "scored by the structural fingerprint",
+        "metadatos": "Word metadata",
+        "meta_linea": "author: {autor} · last author: {ultimo} · created: {creado} · "
+                      "modified: {mod} · revision: {rev} · editing minutes: {min}",
+        "alta_precision": "High-precision mode on",
         "error": "Could not be analysed",
         "uso_resp": (
             "This is a review aid, not evidence. Before acting, read the work and talk to "
@@ -161,6 +182,10 @@ mark{border-radius:3px;padding:0 2px;color:inherit}
 @media(max-width:700px){.dos{grid-template-columns:1fr}}
 .mut{color:var(--mut)}ul.av{margin:6px 0;padding-left:20px}
 footer{margin-top:40px;color:var(--mut);font-size:13px}
+.credito{margin:8px 0 0}.credito a{color:inherit}
+.v-nc{color:var(--mut)}
+.f-1{background:rgba(217,119,6,.10)}.f-2{background:rgba(217,119,6,.28)}
+.f-3{background:rgba(220,38,38,.32)}
 @media print{details{break-inside:avoid}details>*{display:block}.controles{display:none}}
 """
 
@@ -193,6 +218,94 @@ def _clase_veredicto(veredicto):
 
 def _nombre_veredicto(veredicto, idioma):
     return VEREDICTO_EN.get(veredicto, veredicto) if idioma == "en" else veredicto
+
+
+nombre_veredicto = _nombre_veredicto  # versión pública para otros módulos
+
+
+def _nivel_frase(puntuacion, umbrales):
+    if puntuacion >= umbrales[0]:
+        return 3
+    if puntuacion >= umbrales[1]:
+        return 2
+    return 1 if puntuacion >= umbrales[1] - 15 else 0
+
+
+def resaltar_frases(texto, frases, umbrales):
+    """Escapa `texto` y sombrea cada frase según su puntuación (clases f-0 a f-3)."""
+    partes = []
+    posicion = 0
+    for frase in sorted(frases, key=lambda f: f["inicio"]):
+        if frase["inicio"] < posicion:
+            continue
+        partes.append(_e(texto[posicion:frase["inicio"]]))
+        nivel = _nivel_frase(frase["puntuacion"], umbrales)
+        partes.append(
+            f'<span class="f-{nivel}" title="{frase["puntuacion"]:.0f} ({_e(frase["origen"])})">'
+            f'{_e(texto[frase["inicio"]:frase["fin"]])}</span>'
+        )
+        posicion = frase["fin"]
+    partes.append(_e(texto[posicion:]))
+    return "".join(partes)
+
+
+def grafo_grupo_svg(grupo):
+    """SVG sin scripts con las entregas del grupo en círculo y una arista por cada par."""
+    miembros = grupo["miembros"]
+    n = len(miembros)
+    ancho, alto, radio = 560, 300, 105
+    cx, cy = ancho / 2, alto / 2
+    posiciones = {
+        m: (cx + radio * math.cos(2 * math.pi * i / n - math.pi / 2),
+            cy + radio * math.sin(2 * math.pi * i / n - math.pi / 2))
+        for i, m in enumerate(miembros)
+    }
+    lineas, nodos = [], []
+    for par in grupo["pares"]:
+        x1, y1 = posiciones[par["a"]]
+        x2, y2 = posiciones[par["b"]]
+        grosor = 1 + 4 * min(100.0, float(par["ngramas"])) / 100
+        lineas.append(
+            f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
+            f'stroke="currentColor" stroke-opacity="0.45" stroke-width="{grosor:.1f}">'
+            f'<title>{_e(par["a"])} ↔ {_e(par["b"])}: {par["ngramas"]} %</title></line>'
+        )
+    for nombre, (x, y) in posiciones.items():
+        etiqueta = nombre if len(nombre) <= 24 else nombre[:21] + "…"
+        nodos.append(
+            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="6" fill="currentColor"/>'
+            f'<text x="{x:.1f}" y="{y - 11:.1f}" text-anchor="middle" font-size="11" '
+            f'fill="currentColor">{_e(etiqueta)}</text>'
+        )
+    return (
+        f'<svg viewBox="0 0 {ancho} {alto}" role="img" width="100%" style="max-width:560px">'
+        + "".join(lineas) + "".join(nodos) + "</svg>"
+    )
+
+
+def _bloque_grupos(resumen, t):
+    grupos = resumen.get("grupos") or []
+    if not grupos:
+        return ""
+    partes = [f'<h2>{_e(t["grupos"])}</h2>']
+    for grupo in grupos:
+        partes.append(
+            f'<h3>{_e(t["grupo_n"].format(id=grupo["id"], n=len(grupo["miembros"])))}</h3>'
+            f'<p>{_e(", ".join(grupo["miembros"]))}</p>{grafo_grupo_svg(grupo)}'
+        )
+    return "".join(partes)
+
+
+def _pie_html(resumen, idioma):
+    if not resumen.get("credito", True):
+        return ""
+    version = _e(resumen["version"])
+    prefijo = "Generated with" if idioma == "en" else "Generado con"
+    return (
+        f'<p class="credito">{prefijo} <a href="{_e(creditos.PYPI)}">detector-ia {version}</a>'
+        f' · <a href="{_e(creditos.WEB)}">{_e(creditos.AUTOR)}</a>'
+        f' · <a href="{_e(creditos.WEB)}">{_e(creditos._sin_dominio(creditos.WEB))}</a></p>'
+    )
 
 
 def _nombre_confianza(nivel, idioma):
@@ -272,6 +385,23 @@ def _detalle_html(indice, fila, detalle, t, idioma, umbrales):
                       f'<mark class="m-conector">{_e(t["marca_ia"])}</mark> '
                       f'<mark class="m-humana">{_e(t["marca_humana"])}</mark></p>')
         cuerpo.append(f'<div class="texto">{resaltar(pico.texto, pico.marcas)}</div>')
+        if pico.frases:
+            origen = "frases_modelo" if any(
+                f["origen"] == "modelo" for f in pico.frases) else "frases_huella"
+            cuerpo.append(f'<h3>{_e(t["frases"])} · {_e(t[origen])}</h3>')
+            cuerpo.append(
+                f'<div class="texto">{resaltar_frases(pico.texto, pico.frases, umbrales)}</div>'
+            )
+
+    meta = detalle.get("metadatos") if detalle else None
+    if meta:
+        linea = t["meta_linea"].format(
+            autor=meta.get("autor") or "—", ultimo=meta.get("ultimo_autor") or "—",
+            creado=meta.get("creado") or "—", mod=meta.get("modificado") or "—",
+            rev=meta.get("revision") if meta.get("revision") is not None else "—",
+            min=meta.get("minutos_edicion") if meta.get("minutos_edicion") is not None else "—",
+        )
+        cuerpo.append(f'<h3>{_e(t["metadatos"])}</h3><p class="mut">{_e(linea)}</p>')
 
     avisos = detalle.get("avisos", []) if detalle else []
     if avisos:
@@ -326,6 +456,8 @@ def informe_html(resultados, detalles, resumen, pares, idioma="es", umbrales=(58
         modelo = t["sin_modelo"]
     if resumen.get("perplejidad"):
         modelo += " · " + t["perplejidad"]
+    if resumen.get("alta_precision"):
+        modelo += " · " + t["alta_precision"]
 
     conteo = {}
     for fila in resultados:
@@ -400,9 +532,10 @@ def informe_html(resultados, detalles, resumen, pares, idioma="es", umbrales=(58
 <table id="tabla"><thead><tr>{cabeceras}</tr></thead><tbody>{"".join(filas)}</tbody></table>
 <h2>{_e(t["pares"])}</h2>
 {bloque_pares}
+{_bloque_grupos(resumen, t)}
 <h2>{_e(t["detalle"])}</h2>
 {detalle}
-<footer>{_e(t["uso_resp"])}</footer>
+<footer>{_e(t["uso_resp"])}{_pie_html(resumen, idioma)}</footer>
 </main>
 <script>{JS}</script>
 </body>
@@ -478,7 +611,17 @@ def informe_markdown(resultados, detalles, resumen, pares, idioma="es"):
                    "| A | B | n-gramas | coseno |", "| --- | --- | --- | --- |"]
         lineas += [f"| {_md(p['a'])} | {_md(p['b'])} | {p['ngramas']} | {p['coseno']} |"
                    for p in pares]
-    lineas += ["", f"*{TEXTOS['es' if es else 'en']['uso_resp']}*", ""]
+    if resumen.get("grupos"):
+        lineas += ["", f"## {TEXTOS['es' if es else 'en']['grupos']}", ""]
+        for grupo in resumen["grupos"]:
+            lineas.append(
+                f"- **{grupo['id']}** ({len(grupo['miembros'])}): "
+                + ", ".join(_md(m) for m in grupo["miembros"])
+            )
+    lineas += ["", f"*{TEXTOS['es' if es else 'en']['uso_resp']}*"]
+    if resumen.get("credito", True):
+        lineas += ["", "---", "", creditos.pie_markdown(resumen["version"], idioma)]
+    lineas.append("")
     return "\n".join(lineas)
 
 
@@ -504,5 +647,7 @@ def detalle_json(detalle):
         ],
         "coincidencia": detalle.get("coincidencia"),
         "traducida": detalle.get("traducida"),
+        "metadatos": detalle.get("metadatos") or None,
+        "limpieza": detalle.get("limpieza"),
     }
     return resultado

@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import zipfile
 
 import docx
 from pypdf import PdfReader
@@ -62,3 +63,45 @@ def procesar_archivo(ruta):
     elif ext in [".txt", ".md"]:
         return _extraer_texto_plano(ruta)
     return "", ""
+
+
+PALABRAS_MINIMAS_METADATOS = 300
+
+
+def leer_metadatos(ruta):
+    """Metadatos de edición de un .docx (autor, fechas, revisiones, minutos). {} si no hay."""
+    if os.path.splitext(ruta)[1].lower() != ".docx":
+        return {}
+    try:
+        propiedades = docx.Document(ruta).core_properties
+        meta = {
+            "autor": propiedades.author or "",
+            "ultimo_autor": propiedades.last_modified_by or "",
+            "creado": propiedades.created.isoformat() if propiedades.created else "",
+            "modificado": propiedades.modified.isoformat() if propiedades.modified else "",
+            "revision": propiedades.revision,
+            "minutos_edicion": None,
+        }
+        with zipfile.ZipFile(ruta) as paquete:
+            if "docProps/app.xml" in paquete.namelist():
+                xml = paquete.read("docProps/app.xml").decode("utf-8", errors="ignore")
+                encontrado = re.search(r"<TotalTime>(\d+)</TotalTime>", xml)
+                if encontrado:
+                    meta["minutos_edicion"] = int(encontrado.group(1))
+    except Exception:  # un metadato ilegible nunca debe impedir el análisis
+        return {}
+    return meta
+
+
+def evaluar_metadatos(meta, palabras):
+    """Código de aviso si los metadatos no casan con la extensión del texto, o None.
+
+    Es un dato orientativo: un texto pegado desde otro editor o un Word creado por una
+    herramienta en línea también muestran pocos minutos. No prueba nada por sí solo.
+    """
+    if not meta or palabras < PALABRAS_MINIMAS_METADATOS:
+        return None
+    minutos = meta.get("minutos_edicion")
+    if minutos is not None and minutos <= 1:
+        return "edicion_minima"
+    return None

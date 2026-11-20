@@ -12,9 +12,13 @@ from tests.conftest import TEXTO_HUMANO, TEXTO_IA
 main_modulo = importlib.import_module("detector_ia.main")
 
 
-def _leer(ruta):
+def _leer(ruta, delimitador=";"):
+    """Lee el CSV saltando la línea `sep=` que añade el programa para Excel."""
     with open(ruta, encoding="utf-8-sig", newline="") as archivo:
-        return list(csv.DictReader(archivo, delimiter=";"))
+        if archivo.readline().startswith("sep="):
+            return list(csv.DictReader(archivo, delimiter=delimitador))
+        archivo.seek(0)
+        return list(csv.DictReader(archivo, delimiter=delimitador))
 
 
 def _escribir(carpeta, nombre, contenido):
@@ -32,6 +36,7 @@ def test_genera_el_csv_con_las_columnas_esperadas(tmp_path):
 
     assert codigo == 0
     with open(salida, encoding="utf-8-sig", newline="") as archivo:
+        assert archivo.readline().strip() == "sep=;"  # pista para Excel
         cabecera = archivo.readline().strip().split(";")
     assert cabecera == COLUMNAS
     filas = _leer(salida)
@@ -257,7 +262,7 @@ def test_las_columnas_nuevas_se_añaden_al_final():
     ]
     assert COLUMNAS[9:] == [
         "Similitud_Coseno (%)", "Confianza", "Avisos", "Fragmento_Coincidente",
-        "Similitud_Traducida (%)",
+        "Similitud_Traducida (%)", "Grupo",
     ]
 
 
@@ -349,7 +354,10 @@ def test_informe_html_autocontenido_y_con_el_texto_escapado(tmp_path):
     assert "<img src=x" not in contenido
     assert "&lt;script&gt;alert" in contenido
     # Sin recursos externos: ni scripts, ni hojas de estilo, ni imágenes de internet
-    assert "src=\"http" not in contenido and "href=\"http" not in contenido
+    assert "src=\"http" not in contenido and "<link" not in contenido
+    assert "@import" not in contenido and "url(http" not in contenido
+    # los únicos enlaces son los de crédito del pie (navegación, no cargan nada)
+    assert contenido.count("href=\"http") == 3
     assert "ensayo.md" in contenido and "mark" in contenido
 
 
@@ -470,3 +478,27 @@ def test_la_version_incluye_el_autor_y_la_web(capsys):
     texto = capsys.readouterr().out
     assert __version__ in texto
     assert "Alberto Ortiz Sánchez" in texto and "albertoortiz.is-a.dev" in texto
+
+
+def test_el_csv_lleva_la_pista_de_separador_para_excel(tmp_path):
+    _escribir(tmp_path, "a.txt", TEXTO_HUMANO)
+    salida = tmp_path / "r.csv"
+    main(["-c", str(tmp_path), "-s", str(salida), "--sin-modelo"])
+    crudo = salida.read_bytes().decode("utf-8-sig")
+    assert crudo.startswith("sep=;\r\n")
+    assert len(_leer(salida)) == 1
+
+
+def test_csv_limpio_y_separadores(tmp_path):
+    _escribir(tmp_path, "a.txt", TEXTO_HUMANO)
+    limpio = tmp_path / "l.csv"
+    main(["-c", str(tmp_path), "-s", str(limpio), "--sin-modelo", "--csv-limpio"])
+    assert limpio.read_bytes().decode("utf-8-sig").startswith("Archivo;")
+    coma = tmp_path / "c.csv"
+    main(["-c", str(tmp_path), "-s", str(coma), "--sin-modelo", "--separador", ","])
+    assert coma.read_bytes().decode("utf-8-sig").startswith("sep=,\r\n")
+    assert _leer(coma, ",")[0]["Archivo"] == "a.txt"
+    tab = tmp_path / "t.csv"
+    main(["-c", str(tmp_path), "-s", str(tab), "--sin-modelo", "--separador", "tab",
+          "--csv-limpio"])
+    assert _leer(tab, "\t")[0]["Archivo"] == "a.txt"
