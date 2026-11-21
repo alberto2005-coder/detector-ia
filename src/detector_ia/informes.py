@@ -223,6 +223,11 @@ def _nombre_veredicto(veredicto, idioma):
 nombre_veredicto = _nombre_veredicto  # versión pública para otros módulos
 
 
+def _sin_coincidencia(valor, idioma):
+    """`Ninguno` es el valor interno; en inglés se muestra como `None`."""
+    return "None" if idioma == "en" and valor == "Ninguno" else valor
+
+
 def _nivel_frase(puntuacion, umbrales):
     if puntuacion >= umbrales[0]:
         return 3
@@ -310,6 +315,9 @@ def _pie_html(resumen, idioma):
 
 def _nombre_confianza(nivel, idioma):
     return CONFIANZA_EN.get(nivel, nivel) if idioma == "en" else nivel
+
+
+nombre_confianza = _nombre_confianza  # versión pública para otros módulos
 
 
 def resaltar(texto, marcas, clase_prefijo="m-"):
@@ -483,7 +491,7 @@ def informe_html(resultados, detalles, resumen, pares, idioma="es", umbrales=(58
             f'<td class="n">{fila["IA_Pico_Max (%)"]}</td>'
             f"<td>{_e(_nombre_confianza(nivel, idioma))}</td>"
             f'<td class="n">{fila["Similitud_Companero (%)"]}</td>'
-            f'<td>{_e(fila["Coincide_Con"])}</td>'
+            f'<td>{_e(_sin_coincidencia(fila["Coincide_Con"], idioma))}</td>'
             f'<td data-o="{_e(veredicto)}"><span class="v v-{_clase_veredicto(veredicto)}">'
             f"{_e(_nombre_veredicto(veredicto, idioma))}</span></td></tr>"
         )
@@ -575,7 +583,8 @@ def informe_markdown(resultados, detalles, resumen, pares, idioma="es"):
                     _md(fila["Archivo"]), _md(fila["Formato"]), str(fila["IA_Media (%)"]),
                     str(fila["IA_Pico_Max (%)"]),
                     _md(_nombre_confianza(fila.get("Confianza", ""), idioma)),
-                    str(fila["Similitud_Companero (%)"]), _md(fila["Coincide_Con"]),
+                    str(fila["Similitud_Companero (%)"]),
+                    _md(_sin_coincidencia(fila["Coincide_Con"], idioma)),
                     _md(_nombre_veredicto(fila["Veredicto"], idioma)),
                 ]
             ) + " |"

@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from detector_ia import similitud
+from detector_ia.idioma import t
 
 MODELO_POR_DEFECTO = "fakespot-ai/roberta-base-ai-text-detection-v1"
 
@@ -167,9 +168,14 @@ class AnalizadorIA:
             from transformers import pipeline
         except ImportError as error:  # depende del extra opcional "modelo"
             raise SystemExit(
-                "Falta el modelo neuronal. Instálalo con:\n"
-                "  uv sync --extra modelo\n"
-                "o ejecuta el análisis sin modelo con --sin-modelo."
+                t(
+                    "Falta el modelo neuronal. Instálalo con:\n"
+                    "  uv sync --extra modelo\n"
+                    "o ejecuta el análisis sin modelo con --sin-modelo.",
+                    "The neural model is missing. Install it with:\n"
+                    "  uv sync --extra modelo\n"
+                    "or run the analysis without a model using --no-model.",
+                )
             ) from error
         aviso = {
             "es": "Cargando motor híbrido (Neuronal + Huella Estructural Español + Anti-Plagio)...",

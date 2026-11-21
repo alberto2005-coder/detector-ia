@@ -12,6 +12,8 @@ modelos: hay que medirlos con `evaluacion/evaluar.py --perplejidad` antes de fia
 
 import numpy as np
 
+from detector_ia.idioma import t
+
 MODELO_OBSERVADOR = "Qwen/Qwen2.5-0.5B"
 MODELO_EJECUTOR = "Qwen/Qwen2.5-0.5B-Instruct"
 
@@ -66,9 +68,14 @@ class DetectorPerplejidad:
             from transformers import AutoModelForCausalLM, AutoTokenizer
         except ImportError as error:  # depende del extra opcional "modelo"
             raise SystemExit(
-                "Falta el modelo de lenguaje. Instálalo con:\n"
-                '  pip install "detector-ia[modelo]"\n'
-                "o ejecuta el análisis sin --perplejidad."
+                t(
+                    "Falta el modelo de lenguaje. Instálalo con:\n"
+                    '  pip install "detector-ia[modelo]"\n'
+                    "o ejecuta el análisis sin --perplejidad.",
+                    "The language model is missing. Install it with:\n"
+                    '  pip install "detector-ia[modelo]"\n'
+                    "or run the analysis without --perplexity.",
+                )
             ) from error
         from detector_ia.motores import configurar_cache_modelo
 

@@ -107,8 +107,10 @@ Con opciones:
 
 ```bash
 uv run detector-ia --carpeta entregas --salida reportes/marzo.csv
+uv run detector-ia --texto "Pega aquí el texto que quieres revisar..."   # un texto suelto, sin archivos
+cat redaccion.txt | uv run detector-ia --texto -                          # o leído de la entrada estándar
 uv run detector-ia -c ejemplos/misma_entrega.md --sin-modelo   # un solo archivo
-uv run detector-ia --folder entregas --output reporte.csv --lang en
+uv run detector-ia --folder entregas --output reporte.csv --en
 uv run detector-ia --modelo fakespot-ai/roberta-base-ai-text-detection-v1
 uv run detector-ia -c entregas --html informe.html --markdown informe.md   # informes para leer
 uv run detector-ia -c entregas --base enunciado.ipynb                      # sin contar la plantilla
@@ -125,6 +127,7 @@ python -m detector_ia --carpeta revision_ia
 | Opción | Por defecto | Descripción |
 | --- | --- | --- |
 | `-c`, `--carpeta`, `--ruta`, `--folder`, `--path` | `revision_ia` | Carpeta con las entregas o ruta de un archivo concreto |
+| `-t`, `--texto`, `--text` | — | Analiza un texto en vez de una carpeta o archivo; con `-` lo lee de la entrada estándar. El resultado sale por pantalla y no se crea CSV salvo que uses `-s` |
 | `-s`, `--salida`, `--output` | `reporte_profesional_ia.csv` | Ruta del reporte generado |
 | `-m`, `--modelo`, `--model` | RoBERTa de detección de IA | Modelo de Hugging Face a usar |
 | `--sin-modelo`, `--no-model` | desactivado | Analiza solo con las señales estructurales, sin descargar el modelo |
@@ -143,10 +146,10 @@ python -m detector_ia --carpeta revision_ia
 | `--sin-credito`, `--no-credit` | desactivado | Quita la línea final de consola y el pie de los informes (también con `DETECTOR_IA_SIN_CREDITO=1`) |
 | `--json` | desactivado | Escribe el resultado en JSON por la salida estándar (con el detalle de cada bloque) y el progreso por la de errores |
 | `--fail-on` | `ninguno` | Devuelve código de salida 1 si el reporte alcanza `error`, `alto`/`high` o `sospechoso`/`suspicious` (también vale `none`) |
-| `--lang`, `--idioma` | `es` | Idioma de los mensajes de consola (`es`/`en`); el CSV no cambia |
+| `--lang`, `--idioma`, `--en`, `--es` | `es` | Idioma de consola, ayuda, informes, CSV y JSON (`es`/`en`); también `DETECTOR_IA_LANG` |
 | `-V`, `--version` | — | Muestra la versión instalada y sale |
 
-Todos los flags, sus valores y la ayuda de `-h` se pueden escribir en español o en inglés: `--carpeta entregas` y `--folder entregas` hacen lo mismo, igual que `--salida`/`--output`. Con `--lang en` se traducen los mensajes de consola, los veredictos y el CSV (cabeceras `File`, `Format`, `AI_Mean (%)`, `AI_Peak_Max (%)`, `Peer_Similarity (%)`, `Matches_With`, `Verdict`, `Suspicious_Fragment`, `Error`, `Cosine_Similarity (%)`, `Confidence`, `Warnings`, `Matching_Fragment`, `Translated_Similarity (%)`, `Group`). Sin `--lang en` todo queda en español como siempre. La salida `--json` mantiene siempre los nombres en español para que los programas que la leen no cambien. Si lees el CSV desde un programa, fija el idioma para que las columnas no varíen.
+Todos los flags, sus valores y la ayuda de `-h` se pueden escribir en español o en inglés: `--carpeta entregas` y `--folder entregas` hacen lo mismo, igual que `--salida`/`--output`. Con `--lang en` (o el atajo `--en`) se traduce **todo**: mensajes de consola, ayuda `-h`, veredictos, avisos, informes HTML y Markdown, CSV (cabeceras `File`, `Format`, `AI_Mean (%)`, `AI_Peak_Max (%)`, `Peer_Similarity (%)`, `Matches_With`, `Verdict`, `Suspicious_Fragment`, `Error`, `Cosine_Similarity (%)`, `Confidence`, `Warnings`, `Matching_Fragment`, `Translated_Similarity (%)`, `Group`), CSV de calificaciones y claves del JSON (`summary`, `results`…). Sin ningún flag de idioma todo sale en español. También se puede fijar con la variable de entorno `DETECTOR_IA_LANG=en`; la línea de comandos gana a la variable. Si lees el CSV o el JSON desde un programa, fija el idioma para que las columnas y claves no varíen. `-h` sale en un solo idioma si eliges uno (`detector-ia -h --en`) y bilingüe si no pones ningún flag de idioma.
 
 ### Reporte
 
@@ -318,6 +321,8 @@ With options:
 
 ```bash
 uv run detector-ia --carpeta entregas --salida reportes/marzo.csv
+uv run detector-ia --text "Paste here the text you want to check..."      # a loose text, no files
+cat essay.txt | uv run detector-ia --text -                               # or read from standard input
 uv run detector-ia -c ejemplos/misma_entrega.md --sin-modelo   # a single file
 uv run detector-ia --folder entregas --output reporte.csv --lang en
 uv run detector-ia --modelo fakespot-ai/roberta-base-ai-text-detection-v1
@@ -336,6 +341,7 @@ python -m detector_ia --carpeta revision_ia
 | Option | Default | Description |
 | --- | --- | --- |
 | `-c`, `--carpeta`, `--ruta`, `--folder`, `--path` | `revision_ia` | Folder with the submissions, or the path of a single file |
+| `-t`, `--texto`, `--text` | — | Analyses a text instead of a folder or file; with `-` it reads standard input. The result is printed and no CSV is written unless you use `-s` |
 | `-s`, `--salida`, `--output` | `reporte_profesional_ia.csv` | Path of the generated report |
 | `-m`, `--modelo`, `--model` | AI-detection RoBERTa | Hugging Face model to use |
 | `--sin-modelo`, `--no-model` | off | Structural signals only, without downloading the model |
@@ -354,10 +360,10 @@ python -m detector_ia --carpeta revision_ia
 | `--no-credit`, `--sin-credito` | off | Removes the closing console line and the report footer (also with `DETECTOR_IA_SIN_CREDITO=1`) |
 | `--json` | off | Write the result as JSON on stdout (with per-block detail) and progress on stderr |
 | `--fail-on` | `ninguno` | Exit with code 1 when the report reaches `error`, `alto`/`high` or `sospechoso`/`suspicious` (`none` works too) |
-| `--lang`, `--idioma` | `es` | Language of the console messages (`es`/`en`); the CSV does not change |
+| `--lang`, `--idioma`, `--en`, `--es` | `es` | Language of the console, help, reports, CSV and JSON (`es`/`en`); also `DETECTOR_IA_LANG` |
 | `-V`, `--version` | — | Print the installed version and exit |
 
-Every flag, its values and the `-h` help can be written in Spanish or in English: `--carpeta entregas` and `--folder entregas` are the same thing, as are `--salida`/`--output`. With `--lang en` the console messages, the verdicts and the CSV are translated (headers `File`, `Format`, `AI_Mean (%)`, `AI_Peak_Max (%)`, `Peer_Similarity (%)`, `Matches_With`, `Verdict`, `Suspicious_Fragment`, `Error`, `Cosine_Similarity (%)`, `Confidence`, `Warnings`, `Matching_Fragment`, `Translated_Similarity (%)`, `Group`). Without `--lang en` everything stays in Spanish as before. The `--json` output always keeps the Spanish names so programs that read it do not change. If you read the CSV from a program, fix the language so the columns do not vary.
+Every flag, its values and the `-h` help can be written in Spanish or in English: `--carpeta entregas` and `--folder entregas` are the same thing, as are `--salida`/`--output`. With `--lang en` (or the `--en` shortcut) **everything** is translated: console messages, the `-h` help, verdicts, warnings, HTML and Markdown reports, CSV (headers `File`, `Format`, `AI_Mean (%)`, `AI_Peak_Max (%)`, `Peer_Similarity (%)`, `Matches_With`, `Verdict`, `Suspicious_Fragment`, `Error`, `Cosine_Similarity (%)`, `Confidence`, `Warnings`, `Matching_Fragment`, `Translated_Similarity (%)`, `Group`), the gradebook CSV and the JSON keys (`summary`, `results`…). With no language flag everything is in Spanish. You can also set it with the environment variable `DETECTOR_IA_LANG=en`; the command line wins over the variable. If you read the CSV or JSON from a program, fix the language so columns and keys do not vary. `-h` prints in a single language if you choose one (`detector-ia -h --en`) and bilingual if you give no language flag.
 
 ### Report
 

@@ -10,6 +10,8 @@ import re
 
 import numpy as np
 
+from detector_ia.idioma import t
+
 MODELO_SEMANTICO = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
 UMBRAL_FRASE = 0.82  # similitud de coseno entre embeddings para dar dos frases por equivalentes
@@ -33,9 +35,14 @@ def cargar_codificador(modelo=MODELO_SEMANTICO):
         from sentence_transformers import SentenceTransformer
     except ImportError as error:  # depende del extra opcional "semantica"
         raise SystemExit(
-            "Falta el modelo semántico. Instálalo con:\n"
-            '  pip install "detector-ia[semantica]"\n'
-            "o ejecuta el análisis sin --traduccion."
+            t(
+                "Falta el modelo semántico. Instálalo con:\n"
+                '  pip install "detector-ia[semantica]"\n'
+                "o ejecuta el análisis sin --traduccion.",
+                "The semantic model is missing. Install it with:\n"
+                '  pip install "detector-ia[semantica]"\n'
+                "or run the analysis without --translation.",
+            )
         ) from error
     from detector_ia.motores import configurar_cache_modelo
 

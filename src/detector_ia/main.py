@@ -14,6 +14,7 @@ from detector_ia import (
     creditos,
     grupos,
     humanizador,
+    idioma,
     informes,
     limpieza,
     semantica,
@@ -27,8 +28,10 @@ from detector_ia.perplejidad import DetectorPerplejidad
 EXTENSIONES_VALIDAS = (".ipynb", ".pdf", ".docx", ".txt", ".md")
 CARPETA_POR_DEFECTO = "revision_ia"
 SALIDA_POR_DEFECTO = "reporte_profesional_ia.csv"
+SALIDA_POR_DEFECTO_EN = "professional_ai_report.csv"
 
 TEXTO_MINIMO = 120
+ENTRADA_TEXTO = "\0texto"  # marca de la entrada que viene de --texto, no de un archivo
 UMBRAL_PICO_ALTO = 58
 UMBRAL_MEDIA_ALTA = 45
 UMBRAL_PICO_SOSPECHOSO = 45
@@ -82,6 +85,41 @@ COLUMNAS_EN = [
 ]
 
 
+CLAVES_JSON_EN = {
+    **dict(zip(COLUMNAS, COLUMNAS_EN, strict=True)),
+    "Detalle": "Detail",
+    "resumen": "summary", "resultados": "results", "ruta": "path", "reporte": "report",
+    "modelo": "model", "perplejidad": "perplexity", "traduccion": "translation",
+    "idioma": "language", "errores": "errors", "aviso": "notice", "credito": "credit",
+    "alta_precision": "high_precision", "umbrales": "thresholds", "grupos": "groups",
+    "pico_alto": "high_peak", "media_alta": "high_mean",
+    "pico_sospechoso": "suspicious_peak", "media_sospechosa": "suspicious_mean",
+    "miembros": "members", "pares": "pairs", "ngramas": "ngrams", "coseno": "cosine",
+    "confianza": "confidence", "avisos": "warnings", "bloques": "blocks",
+    "inicio": "start", "fin": "end", "puntuacion": "score", "huella": "fingerprint",
+    "uniformidad": "uniformity", "neuronal": "neural", "coincidencia": "match",
+    "traducida": "translated", "metadatos": "metadata", "limpieza": "cleaning",
+    "invisibles": "invisible", "palabras_mixtas": "mixed_words", "companero": "peer",
+    "fragmentos": "fragments", "tokens": "tokens", "inicio_a": "start_a", "fin_a": "end_a",
+    "inicio_b": "start_b", "fin_b": "end_b", "texto_a": "text_a", "texto_b": "text_b",
+    "autor": "author", "ultimo_autor": "last_author", "creado": "created",
+    "modificado": "modified", "minutos_edicion": "editing_minutes",
+}
+
+
+def _traducir_claves(objeto, idioma):
+    """Con `--lang en`, claves del JSON en inglés (los valores no cambian)."""
+    if idioma != "en":
+        return objeto
+    if isinstance(objeto, dict):
+        return {
+            CLAVES_JSON_EN.get(k, k): _traducir_claves(v, idioma) for k, v in objeto.items()
+        }
+    if isinstance(objeto, list):
+        return [_traducir_claves(v, idioma) for v in objeto]
+    return objeto
+
+
 def _traducir_filas(resultados, idioma):
     """Con `--lang en`, cabeceras y valores del CSV en inglés. El resto del programa usa
     los nombres en español internamente, así que solo se traduce al escribir."""
@@ -117,6 +155,21 @@ MENSAJES = {
         "entregas": "entregas",
         "sin_archivos": "No se encontraron archivos compatibles en '{ruta}'.",
         "listo": "\n¡Listo! Reporte guardado en '{salida}'.",
+        "analizando_texto": "Analizando el texto ({n} caracteres)...",
+        "texto_vacio": "El texto está vacío: escribe algo tras --texto o envíalo con --texto -.",
+        "nombre_texto": "texto",
+        "tipo_texto": "TEXTO",
+        "res_veredicto": "Veredicto: {valor}",
+        "res_ia": "IA: pico {pico} % · media {media} % · confianza: {confianza}",
+        "res_avisos": "Avisos: {valor}",
+        "res_fragmento": "Fragmento más sospechoso: «{valor}»",
+        "res_poco_texto": (
+            "Veredicto: demasiado poco texto para analizarlo (mínimo {minimo} caracteres)."
+        ),
+        "poco_texto": (
+            "- [{tipo}] {nombre} -> demasiado poco texto para analizarlo "
+            "(mínimo {minimo} caracteres)."
+        ),
         "aviso_errores": "Aviso: {n} archivo(s) no se pudieron analizar (ver columna Error).",
         "error_lectura": "✖ [{tipo}] {nombre} -> no se pudo leer: {error}",
         "error_puntuacion": "✖ [{tipo}] {nombre} -> no se pudo puntuar: {error}",
@@ -146,6 +199,18 @@ MENSAJES = {
         "entregas": "submissions",
         "sin_archivos": "No supported files found in '{ruta}'.",
         "listo": "\nDone! Report saved to '{salida}'.",
+        "analizando_texto": "Analysing the text ({n} characters)...",
+        "texto_vacio": "The text is empty: write something after --text or pipe it with --text -.",
+        "nombre_texto": "text",
+        "tipo_texto": "TEXT",
+        "res_veredicto": "Verdict: {valor}",
+        "res_ia": "AI: peak {pico} % · mean {media} % · confidence: {confianza}",
+        "res_avisos": "Warnings: {valor}",
+        "res_fragmento": "Most suspicious fragment: “{valor}”",
+        "res_poco_texto": "Verdict: too little text to analyse (minimum {minimo} characters).",
+        "poco_texto": (
+            "- [{tipo}] {nombre} -> too little text to analyse (minimum {minimo} characters)."
+        ),
         "aviso_errores": "Warning: {n} file(s) could not be analysed (see the Error column).",
         "error_lectura": "✖ [{tipo}] {nombre} -> could not read it: {error}",
         "error_puntuacion": "✖ [{tipo}] {nombre} -> could not score it: {error}",
@@ -179,30 +244,138 @@ def _version():
         return "0.0.0"
 
 
+def _idioma_explicito(argv):
+    """Idioma pedido en la línea de comandos o en DETECTOR_IA_LANG; None si no se pidió.
+
+    Se mira antes de crear el parser para poder mostrar la ayuda (`-h`) en un solo idioma.
+    Si no se pidió ninguno, la ayuda sale bilingüe y el resto del programa en español.
+    Gana la última opción, igual que con argparse.
+    """
+    elegido = idioma.por_defecto() if os.environ.get(idioma.VARIABLE) else None
+    palabras = list(sys.argv[1:] if argv is None else argv)
+    for n, palabra in enumerate(palabras):
+        if palabra == "--en":
+            elegido = "en"
+        elif palabra == "--es":
+            elegido = "es"
+        elif palabra in ("--lang", "--idioma") and n + 1 < len(palabras):
+            if palabras[n + 1] in idioma.IDIOMAS:
+                elegido = palabras[n + 1]
+        elif palabra.startswith(("--lang=", "--idioma=")):
+            valor = palabra.split("=", 1)[1]
+            if valor in idioma.IDIOMAS:
+                elegido = valor
+    return elegido
+
+
+DESCRIPCION = {
+    "es": (
+        "Detecta indicios de texto generado por IA y posibles copias entre "
+        "entregas de alumnos, y genera un reporte CSV."
+    ),
+    "en": (
+        "Detects AI-generated text and possible copying between student "
+        "submissions, and produces a CSV report."
+    ),
+}
+
+
+def _epilogo(idioma_ayuda):
+    ejemplos_es = (
+        "Ejemplos:\n"
+        "  detector-ia -c revision_ia --salida reporte.csv\n"
+        "  detector-ia -c revision_ia/entrega.pdf --sin-modelo\n"
+        "  detector-ia -c entregas --html informe.html --base enunciado.ipynb\n\n"
+        f"Desarrollado por {AUTOR}\n"
+        f"  Web:        {WEB}\n"
+        f"  GitHub:     {GITHUB_AUTOR}\n"
+        f"  PyPI:       {PYPI}\n"
+        f"  Código:     {REPOSITORIO}\n"
+        f"  Incidencias: {REPOSITORIO}/issues\n"
+        "Licencia: MIT"
+    )
+    ejemplos_en = (
+        "Examples:\n"
+        "  detector-ia --folder submissions --output report.csv --lang en\n"
+        "  detector-ia -c submissions/essay.pdf --no-model --en\n"
+        "  detector-ia -c submissions --html report.html --base assignment.ipynb --en\n\n"
+        f"Developed by {AUTOR}\n"
+        f"  Website: {WEB}\n"
+        f"  GitHub:  {GITHUB_AUTOR}\n"
+        f"  PyPI:    {PYPI}\n"
+        f"  Source:  {REPOSITORIO}\n"
+        f"  Issues:  {REPOSITORIO}/issues\n"
+        "License: MIT"
+    )
+    if idioma_ayuda == "es":
+        return ejemplos_es
+    if idioma_ayuda == "en":
+        return ejemplos_en
+    return ejemplos_es + "\n\n" + ejemplos_en
+
+
+ALIAS_SOLO_ES = frozenset({
+    "--carpeta", "--ruta", "--salida", "--modelo", "--sin-modelo", "--perplejidad",
+    "--traduccion", "--separador", "--csv-limpio", "--sin-credito", "--calibrar",
+    "--calibracion", "--alta-precision", "--frases", "--idioma", "--texto",
+})
+ALIAS_SOLO_EN = frozenset({
+    "--text", "--folder", "--path", "--output", "--model", "--no-model", "--perplexity",
+    "--translation", "--separator", "--plain-csv", "--no-credit", "--calibrate",
+    "--calibration", "--high-precision", "--sentences", "--gradebook", "--md",
+})
+METAVAR_EN = {
+    "RUTA": "PATH", "CARPETA": "FOLDER", "SALIDA": "OUTPUT", "MODELO": "MODEL", "TEXTO": "TEXT",
+}
+
+
+class _FormateadorEs(argparse.RawDescriptionHelpFormatter):
+    def add_usage(self, usage, actions, groups, prefix=None):
+        return super().add_usage(usage, actions, groups, prefix or "uso: ")
+
+
+def _ayuda_en_un_idioma(parser, idioma_ayuda):
+    """Deja en la ayuda solo el idioma pedido: textos, nombres de opciones y metavariables.
+
+    Solo cambia lo que se muestra; el parser sigue aceptando todos los alias.
+    """
+    en = idioma_ayuda == "en"
+    ocultar = ALIAS_SOLO_ES if en else ALIAS_SOLO_EN
+    for accion in parser._actions:
+        if accion.help and " · " in accion.help:
+            texto_es, texto_en = accion.help.split(" · ", 1)
+            accion.help = texto_en if en else texto_es
+        visibles = [o for o in accion.option_strings if o not in ocultar]
+        if visibles:
+            accion.option_strings = visibles
+        metavar = accion.metavar or (accion.dest.upper() if accion.option_strings else None)
+        if en and metavar in METAVAR_EN:
+            accion.metavar = METAVAR_EN[metavar]
+        if accion.dest == "fail_on":
+            accion.metavar = "{none,error,high,suspicious}" if en else (
+                "{ninguno,error,alto,sospechoso}")
+        if accion.dest == "separador":
+            accion.metavar = "SEP"
+        if accion.dest == "help":
+            accion.help = "show this help message and exit" if en else (
+                "muestra esta ayuda y termina")
+    if not en:
+        parser._optionals.title = "opciones"
+
+
 def _parsear_argumentos(argv=None):
+    idioma_ayuda = _idioma_explicito(argv)
     parser = argparse.ArgumentParser(
         prog="detector-ia",
         description=(
-            "Detecta indicios de texto generado por IA y posibles copias entre "
-            "entregas de alumnos, y genera un reporte CSV.\n"
-            "Detects AI-generated text and possible copying between student "
-            "submissions, and produces a CSV report."
+            DESCRIPCION[idioma_ayuda]
+            if idioma_ayuda
+            else DESCRIPCION["es"] + "\n" + DESCRIPCION["en"]
         ),
-        epilog=(
-            "Ejemplos / Examples:\n"
-            "  detector-ia -c revision_ia --salida reporte.csv\n"
-            "  detector-ia -c revision_ia/entrega.pdf --sin-modelo\n"
-            "  detector-ia --folder entregas --output reporte.csv --lang en\n"
-            "  detector-ia -c entregas --html informe.html --base enunciado.ipynb\n\n"
-            f"Desarrollado por / Developed by {AUTOR}\n"
-            f"  Web / Website: {WEB}\n"
-            f"  GitHub:        {GITHUB_AUTOR}\n"
-            f"  PyPI:          {PYPI}\n"
-            f"  Código / Source: {REPOSITORIO}\n"
-            f"  Incidencias / Issues: {REPOSITORIO}/issues\n"
-            "Licencia / License: MIT"
+        epilog=_epilogo(idioma_ayuda),
+        formatter_class=(
+            _FormateadorEs if idioma_ayuda == "es" else argparse.RawDescriptionHelpFormatter
         ),
-        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "-c",
@@ -213,9 +386,24 @@ def _parsear_argumentos(argv=None):
         dest="carpeta",
         default=CARPETA_POR_DEFECTO,
         help=(
-            "Carpeta con las entregas o ruta de un archivo "
-            f"(por defecto/default: {CARPETA_POR_DEFECTO}/). "
-            "Folder of submissions or path to a single file."
+            f"Carpeta con las entregas o ruta de un archivo (por defecto: {CARPETA_POR_DEFECTO}/)"
+            " · "
+            "Folder of submissions or path to a single file "
+            f"(default: {CARPETA_POR_DEFECTO}/)."
+        ),
+    )
+    parser.add_argument(
+        "-t",
+        "--texto",
+        "--text",
+        dest="texto_directo",
+        metavar="TEXTO",
+        default=None,
+        help=(
+            "Analiza un texto en vez de una carpeta o un archivo; con '-' lo lee de la entrada "
+            "estándar (el resultado sale por pantalla y no se crea CSV salvo que uses -s) · "
+            "Analyses a text instead of a folder or a file; with '-' it reads standard input "
+            "(the result is printed and no CSV is written unless you use -s)."
         ),
     )
     parser.add_argument(
@@ -223,10 +411,11 @@ def _parsear_argumentos(argv=None):
         "--salida",
         "--output",
         dest="salida",
-        default=SALIDA_POR_DEFECTO,
+        default=None,
         help=(
-            "Ruta del reporte CSV · CSV report path "
-            f"(por defecto/default: {SALIDA_POR_DEFECTO})."
+            f"Ruta del reporte CSV (por defecto: {SALIDA_POR_DEFECTO})"
+            " · "
+            f"CSV report path (default: {SALIDA_POR_DEFECTO_EN})."
         ),
     )
     parser.add_argument(
@@ -363,7 +552,10 @@ def _parsear_argumentos(argv=None):
         dest="calibracion",
         metavar="JSON",
         default=None,
-        help="Usa los umbrales de un JSON creado con --calibrar · Use thresholds from --calibrar.",
+        help=(
+            "Usa los umbrales de un JSON creado con --calibrar · "
+            "Uses the thresholds from a JSON created with --calibrate."
+        ),
     )
     parser.add_argument(
         "--alta-precision",
@@ -372,7 +564,8 @@ def _parsear_argumentos(argv=None):
         action="store_true",
         help=(
             "Umbrales más exigentes: ante la duda el veredicto es 'No concluyente' en vez de "
-            "acusar · Stricter thresholds: when in doubt the verdict is 'No concluyente'."
+            "acusar · Stricter thresholds: when in doubt the verdict is 'Inconclusive' "
+            "instead of an accusation."
         ),
     )
     parser.add_argument(
@@ -403,8 +596,10 @@ def _parsear_argumentos(argv=None):
         choices=tuple(NIVELES_FAIL_ON),
         default="ninguno",
         help=(
-            "Código de salida 1 al alcanzar ese nivel: ninguno/none, error, alto/high, "
-            "sospechoso/suspicious (por defecto/default: ninguno)."
+            "Código de salida 1 al alcanzar ese nivel: ninguno, error, alto, sospechoso "
+            "(por defecto: ninguno; también valen none, high y suspicious) · "
+            "Exit code 1 when that level is reached: none, error, high, suspicious "
+            "(default: none; ninguno, alto and sospechoso also work)."
         ),
     )
     parser.add_argument(
@@ -412,10 +607,33 @@ def _parsear_argumentos(argv=None):
         "--idioma",
         dest="idioma",
         choices=("es", "en"),
-        default="es",
-        help="Idioma de los mensajes de consola · Console message language (es/en).",
+        default=idioma.por_defecto(),
+        help=(
+            "Idioma de consola, informes, CSV y JSON (variable DETECTOR_IA_LANG) · "
+            "Language of the console, reports, CSV and JSON (variable DETECTOR_IA_LANG)."
+        ),
     )
-    return parser.parse_args(argv)
+    parser.add_argument(
+        "--en",
+        dest="idioma",
+        action="store_const",
+        const="en",
+        help="Atajo de --lang en · Shortcut for --lang en.",
+    )
+    parser.add_argument(
+        "--es",
+        dest="idioma",
+        action="store_const",
+        const="es",
+        help="Atajo de --lang es · Shortcut for --lang es.",
+    )
+    if idioma_ayuda:
+        _ayuda_en_un_idioma(parser, idioma_ayuda)
+    args = parser.parse_args(argv)
+    args.salida_explicita = args.salida is not None
+    if args.salida is None:
+        args.salida = SALIDA_POR_DEFECTO_EN if args.idioma == "en" else SALIDA_POR_DEFECTO
+    return args
 
 
 UMBRALES_POR_DEFECTO = {
@@ -473,6 +691,41 @@ def _listar_archivos(ruta):
     else:
         candidatos = sorted(glob.glob(os.path.join(ruta, "*")))
     return [c for c in candidatos if c.lower().endswith(EXTENSIONES_VALIDAS)]
+
+
+def _leer_texto_directo(valor):
+    """El texto de --texto; con '-' se lee entero de la entrada estándar."""
+    if valor != "-":
+        return valor
+    datos = sys.stdin.buffer.read()
+    for codificacion in ("utf-8-sig", "utf-16"):
+        try:
+            return datos.decode(codificacion)
+        except UnicodeError:
+            continue
+    return datos.decode("cp1252", errors="replace")
+
+
+def _imprimir_resumen_texto(fila, texto, idioma):
+    """Resumen legible por la salida estándar cuando se analiza un texto suelto."""
+    if fila["Veredicto"] == "Poco texto":
+        print(texto["res_poco_texto"].format(minimo=TEXTO_MINIMO))
+        return
+    print(texto["res_veredicto"].format(valor=informes.nombre_veredicto(fila["Veredicto"], idioma)))
+    print(
+        texto["res_ia"].format(
+            pico=fila["IA_Pico_Max (%)"],
+            media=fila["IA_Media (%)"],
+            confianza=informes.nombre_confianza(fila["Confianza"], idioma),
+        )
+    )
+    if fila["Avisos"]:
+        print(texto["res_avisos"].format(valor=fila["Avisos"]))
+    if fila["Fragmento_Sospechoso"] and fila["Veredicto"] != "Normal":
+        fragmento = " ".join(str(fila["Fragmento_Sospechoso"]).split())
+        if len(fragmento) > 300:
+            fragmento = fragmento[:297] + "…"
+        print(texto["res_fragmento"].format(valor=fragmento))
 
 
 def _fila(datos):
@@ -615,16 +868,21 @@ def _filas_lms(resultados, idioma):
             )
         if fila.get("Grupo"):
             partes.append(f"{'grupo' if es else 'group'} {fila['Grupo']}")
-        filas.append(
-            {
-                "Identificador": fila["Archivo"],
-                "Veredicto": informes.nombre_veredicto(veredicto, idioma),
-                "IA_Pico (%)": fila["IA_Pico_Max (%)"],
-                "Similitud (%)": fila["Similitud_Companero (%)"],
-                "Grupo": fila.get("Grupo", ""),
-                "Comentario": "; ".join(partes),
-            }
+        cabeceras = (
+            ("Identifier", "Verdict", "AI_Peak (%)", "Similarity (%)", "Group", "Comment")
+            if not es
+            else ("Identificador", "Veredicto", "IA_Pico (%)", "Similitud (%)", "Grupo",
+                  "Comentario")
         )
+        valores = (
+            fila["Archivo"],
+            informes.nombre_veredicto(veredicto, idioma),
+            fila["IA_Pico_Max (%)"],
+            fila["Similitud_Companero (%)"],
+            fila.get("Grupo", ""),
+            "; ".join(partes),
+        )
+        filas.append(dict(zip(cabeceras, valores, strict=True)))
     return filas
 
 
@@ -634,6 +892,7 @@ def main(argv=None):
             flujo.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)
 
     args = _parsear_argumentos(argv)
+    idioma.fijar(args.idioma)
     texto = MENSAJES[args.idioma]
     ruta = args.carpeta
     nivel = NIVELES_FAIL_ON[args.fail_on]
@@ -646,7 +905,15 @@ def main(argv=None):
             _imprimir(texto["calibracion_invalida"].format(ruta=args.calibracion, error=error))
             return 2
 
-    archivos = [] if args.calibrar else _listar_archivos(ruta)
+    entrada_texto = None
+    if args.texto_directo is not None and not args.calibrar:
+        entrada_texto = _leer_texto_directo(args.texto_directo).strip()
+        if not entrada_texto:
+            _imprimir(texto["texto_vacio"])
+            return 2
+        archivos = [ENTRADA_TEXTO]
+    else:
+        archivos = [] if args.calibrar else _listar_archivos(ruta)
 
     if not archivos and not args.calibrar:
         _imprimir(texto["sin_archivos"].format(ruta=ruta))
@@ -674,18 +941,27 @@ def main(argv=None):
     if args.base:
         base_texto, base_codigo = _cargar_base(args.base, args.idioma)
 
-    unidad = texto["entrega"] if len(archivos) == 1 else texto["entregas"]
-    _imprimir(texto["analizando"].format(n=len(archivos), unidad=unidad))
+    if entrada_texto is not None:
+        _imprimir(texto["analizando_texto"].format(n=len(entrada_texto)))
+    else:
+        unidad = texto["entrega"] if len(archivos) == 1 else texto["entregas"]
+        _imprimir(texto["analizando"].format(n=len(archivos), unidad=unidad))
 
     resultados = []
     validas = []
     detalles = {}
 
     for ruta_archivo in archivos:
-        nombre = os.path.basename(ruta_archivo)
-        tipo = os.path.splitext(ruta_archivo)[1].upper()
+        if ruta_archivo == ENTRADA_TEXTO:
+            nombre, tipo = texto["nombre_texto"], texto["tipo_texto"]
+        else:
+            nombre = os.path.basename(ruta_archivo)
+            tipo = os.path.splitext(ruta_archivo)[1].upper()
         try:
-            contenido, codigo = procesar_archivo(ruta_archivo)
+            if ruta_archivo == ENTRADA_TEXTO:
+                contenido, codigo = entrada_texto, ""
+            else:
+                contenido, codigo = procesar_archivo(ruta_archivo)
         except Exception as error:  # un archivo roto no debe tumbar el lote
             resultados.append(
                 _fila(
@@ -704,6 +980,7 @@ def main(argv=None):
             resultados.append(
                 _fila({"Archivo": nombre, "Formato": tipo, "Veredicto": "Poco texto"})
             )
+            _imprimir(texto["poco_texto"].format(tipo=tipo, nombre=nombre, minimo=TEXTO_MINIMO))
             continue
 
         resumen_limpieza = limpieza.analizar(contenido)
@@ -862,11 +1139,13 @@ def main(argv=None):
     resultados.sort(
         key=lambda fila: (fila["IA_Pico_Max (%)"], fila["Similitud_Companero (%)"]), reverse=True
     )
-    df = _traducir_filas(resultados, args.idioma)
-    carpeta_salida = os.path.dirname(args.salida)
-    if carpeta_salida:
-        os.makedirs(carpeta_salida, exist_ok=True)
-    _escribir_csv(df, args.salida, args.separador, pista_excel=not args.csv_limpio)
+    escribir_csv = entrada_texto is None or args.salida_explicita
+    if escribir_csv:
+        df = _traducir_filas(resultados, args.idioma)
+        carpeta_salida = os.path.dirname(args.salida)
+        if carpeta_salida:
+            os.makedirs(carpeta_salida, exist_ok=True)
+        _escribir_csv(df, args.salida, args.separador, pista_excel=not args.csv_limpio)
 
     errores = sum(1 for fila in resultados if fila["Veredicto"] == "Error")
     resumen = {
@@ -931,8 +1210,17 @@ def main(argv=None):
             {**fila, "Detalle": informes.detalle_json(detalles.get(fila["Archivo"]))}
             for fila in resultados
         ]
-        print(json.dumps({"resumen": resumen, "resultados": filas_json},
-                         ensure_ascii=False, indent=2))
+        salida_json = _traducir_claves(
+            {"resumen": resumen, "resultados": filas_json}, args.idioma
+        )
+        if args.idioma == "en":  # valores que son etiquetas, no datos
+            for fila in salida_json["results"]:
+                fila["Verdict"] = informes.nombre_veredicto(fila["Verdict"], "en")
+        print(json.dumps(salida_json, ensure_ascii=False, indent=2))
+    elif entrada_texto is not None:
+        _imprimir_resumen_texto(resultados[0], texto, args.idioma)
+        if escribir_csv:
+            _imprimir(texto["listo"].format(salida=args.salida))
     else:
         _imprimir(texto["listo"].format(salida=args.salida))
     if errores:

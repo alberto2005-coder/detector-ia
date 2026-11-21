@@ -8,6 +8,8 @@ alcanzan, de modo que el falso positivo sobre ese tipo de texto sea bajo.
 import json
 import math
 
+from detector_ia.idioma import t
+
 POR_DEFECTO = {
     "pico_alto": 58.0,
     "media_alta": 45.0,
@@ -23,7 +25,7 @@ CLAVES = tuple(POR_DEFECTO)
 def percentil(valores, p):
     """Percentil con interpolación lineal (p entre 0 y 100)."""
     if not valores:
-        raise ValueError("sin valores")
+        raise ValueError(t("sin valores", "no values"))
     orden = sorted(valores)
     posicion = (len(orden) - 1) * p / 100
     bajo, alto = math.floor(posicion), math.ceil(posicion)
@@ -62,7 +64,9 @@ def cargar(ruta):
         if clave in umbrales:
             valor = umbrales[clave]
             if isinstance(valor, bool) or not isinstance(valor, (int, float)):
-                raise ValueError(f"umbral '{clave}' no es un número")
+                raise ValueError(
+                    t(f"umbral '{clave}' no es un número", f"threshold '{clave}' is not a number")
+                )
             resultado[clave] = float(valor)
     return resultado
 

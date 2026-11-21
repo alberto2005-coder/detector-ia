@@ -9,6 +9,35 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Se
 
 ## Español
 
+### [1.3.0] — 2026-11-21
+
+#### Añadido
+
+- **App 100 % bilingüe**: con `--lang en` (o `--en`) sale en inglés **todo**: consola, ayuda `-h`, veredictos, avisos, informes HTML y Markdown, CSV, CSV de calificaciones y claves del JSON (`summary`, `results`, `Verdict`, `Detail`…). Con `--es`, o sin ningún flag de idioma, sale todo en español.
+- **Atajos `--en` y `--es`**, y variable de entorno `DETECTOR_IA_LANG` (la línea de comandos gana).
+- **`-h` en un solo idioma** al elegir `--en` o `--es` (sin flag sigue bilingüe); los nombres de opciones, descripciones y ejemplos salen en el idioma elegido (todos los alias siguen funcionando).
+- Nombre del CSV por defecto en inglés: `professional_ai_report.csv` con `--en`.
+- Mensaje en consola para las entregas con demasiado poco texto (antes solo aparecían en el CSV).
+- `evaluar.py` bilingüe (`--lang`/`--en`/`--es`, alias `--no-model`, `--perplexity`, `--no-cleaning`, `--labels`).
+- Los errores de dependencias opcionales y de calibración salen en el idioma elegido.
+- **Analizar un texto directamente**: `detector-ia --texto "…"` (alias `-t`, `--text`) revisa un texto pegado sin necesidad de carpeta ni archivo. Con `--texto -` lo lee de la entrada estándar (`cat redaccion.txt | detector-ia --texto -`; acepta UTF-8, con BOM y UTF-16, el de PowerShell).
+- El resultado sale por pantalla (veredicto, IA pico y media, confianza, avisos y fragmento más sospechoso) y **no se crea CSV** salvo que pongas `-s`. Funcionan `--json`, `--html`, `--markdown`, `--fail-on`, `--alta-precision`, `--frases` y la limpieza de caracteres ocultos. Todo en español o inglés según `--lang`/`--en`.
+- `python -m detector_ia` devuelve ahora el código de salida (antes lo ignoraba).
+
+#### Cambiado
+
+- El JSON con `--lang en` usa claves en inglés (con español no cambia).
+- `-h` con `--en` o `--es` sale en un solo idioma; sin flag de idioma sigue saliendo bilingüe (el resto de la salida, en español).
+- La tabla del HTML/Markdown en inglés muestra `None` en vez de `Ninguno`.
+
+#### Límites
+
+- Los textos analizados y los fragmentos citados se muestran tal cual (no se traducen).
+- Los mensajes propios de `argparse` (por ejemplo «invalid choice») siguen el idioma del sistema, no el de `--lang`.
+- La carpeta por defecto sigue llamándose `revision_ia`.
+- Con un solo texto no hay comparación entre entregas: solo se evalúa la IA, no la copia.
+- Los textos cortos (menos de unos 2 bloques) dan una confianza baja; el aviso lo indica.
+
 ### [1.2.0] — 2026-11-20
 
 #### Añadido
@@ -148,6 +177,35 @@ Primera versión utilizable del detector.
 ---
 
 ## English
+
+### [1.3.0] — 2026-11-21
+
+#### Added
+
+- **100 % bilingual app**: with `--lang en` (or `--en`) **everything** comes out in English: console, `-h` help, verdicts, warnings, HTML and Markdown reports, CSV, gradebook CSV and JSON keys (`summary`, `results`, `Verdict`, `Detail`…). With `--es`, or with no language flag at all, everything comes out in Spanish.
+- **`--en` and `--es` shortcuts**, and the `DETECTOR_IA_LANG` environment variable (the command line wins).
+- **`-h` in a single language** when you choose `--en` or `--es` (with no flag it stays bilingual); option names, descriptions and examples appear in the chosen language (every alias still works).
+- Default CSV name in English: `professional_ai_report.csv` with `--en`.
+- Console message for submissions with too little text (before they only appeared in the CSV).
+- Bilingual `evaluar.py` (`--lang`/`--en`/`--es`, aliases `--no-model`, `--perplexity`, `--no-cleaning`, `--labels`).
+- Optional-dependency and calibration errors appear in the chosen language.
+- **Analyse a text directly**: `detector-ia --text "…"` (aliases `-t`, `--texto`) checks a pasted text with no folder or file. With `--text -` it reads standard input (`cat essay.txt | detector-ia --text -`; it accepts UTF-8, with BOM, and UTF-16, as used by PowerShell).
+- The result is printed (verdict, AI peak and mean, confidence, warnings and most suspicious fragment) and **no CSV is created** unless you pass `-s`. `--json`, `--html`, `--markdown`, `--fail-on`, `--high-precision`, `--sentences` and the hidden-character cleaning all work. Everything in Spanish or English according to `--lang`/`--en`.
+- `python -m detector_ia` now returns the exit code (it used to ignore it).
+
+#### Changed
+
+- With `--lang en` the JSON uses English keys (with Spanish nothing changes).
+- `-h` with `--en` or `--es` prints in a single language; with no language flag it is still bilingual (everything else, in Spanish).
+- The HTML/Markdown table in English shows `None` instead of `Ninguno`.
+
+#### Limits
+
+- Analysed texts and quoted fragments are shown as they are (not translated).
+- `argparse`'s own messages (for example "invalid choice") follow the system language, not `--lang`.
+- The default folder is still called `revision_ia`.
+- With a single text there is no comparison between submissions: only AI is assessed, not copying.
+- Short texts (fewer than about 2 blocks) get low confidence; the warning says so.
 
 ### [1.2.0] — 2026-11-20
 

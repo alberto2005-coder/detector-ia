@@ -267,8 +267,8 @@ def test_filas_lms_en_ingles():
     fila = {"Archivo": "a.txt", "Veredicto": "No concluyente", "IA_Pico_Max (%)": 50,
             "Coincide_Con": "Ninguno", "Similitud_Companero (%)": 0, "Grupo": ""}
     resultado = _filas_lms([fila], "en")[0]
-    assert resultado["Veredicto"] == "Inconclusive"
-    assert resultado["Comentario"] == "AI peak 50 %"
+    assert resultado["Verdict"] == "Inconclusive"
+    assert resultado["Comment"] == "AI peak 50 %"
 
 
 # --- metadatos de Word -----------------------------------------------------------------------

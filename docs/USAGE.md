@@ -24,6 +24,16 @@ Los archivos con menos de 120 caracteres de texto útil se marcan como `Poco tex
 
 En los cuadernos la similitud se calcula sobre el código (o sobre su texto, si el cuaderno no tiene código); en el resto de formatos, sobre el texto redactado. Un mismo trabajo entregado en dos formatos (por ejemplo `.pdf` y `.txt`) no se cuenta como copia entre alumnos.
 
+### Analizar un texto suelto
+
+Si solo quieres revisar un texto, sin crear archivos: `detector-ia --texto "pega aquí el texto"` (o `-t`). Para un texto largo, envíalo por la entrada estándar con `--texto -`:
+
+```bash
+cat redaccion.txt | detector-ia --texto -
+```
+
+En PowerShell: `Get-Content redaccion.txt -Raw | detector-ia --texto -`. El resultado sale por pantalla y no se crea CSV salvo que añadas `-s`. Con un solo texto no se puede detectar copia, solo IA, y los textos cortos dan una confianza baja.
+
 ### Salida por consola
 
 ```text
@@ -79,6 +89,16 @@ Create a folder (default `revision_ia/`) and copy the files to analyse into it. 
 Files with fewer than 120 characters of usable text are reported as `Poco texto` and not scored.
 
 In notebooks similarity is computed over code (or over their text, when the notebook has no code); in every other format, over the written text. The same assignment submitted in two formats (say `.pdf` and `.txt`) is not counted as student-to-student copying.
+
+### Analysing a loose text
+
+If you only want to check a text, without creating files: `detector-ia --text "paste the text here"` (or `-t`). For a long text, send it through standard input with `--text -`:
+
+```bash
+cat essay.txt | detector-ia --text -
+```
+
+In PowerShell: `Get-Content essay.txt -Raw | detector-ia --text -`. The result is printed and no CSV is created unless you add `-s`. With a single text copying cannot be detected, only AI, and short texts give low confidence.
 
 ### Console output
 
